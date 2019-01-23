@@ -27,12 +27,12 @@ class ANN:
             "m_weights": 0.1,
             "sigma_weights": 0.05,
             "nodes": 1,
-            "learn_meth": 'perceptron'
+            "learn_meth": 'delta_rule',
+            "bias": -1
         }
 
         for var, default in var_defaults.items():
             setattr(self, var, kwargs.get(var, default))
-
         self.n_features = data.shape[1]
         self.train_data, self.train_targets = self.shape_input(data, targets)
         self.w = self.init_weights()
@@ -53,13 +53,14 @@ class ANN:
 
     def shape_input(self, X, Y):
         """
-        Add bias as input vector (feature) in the data and shuffle them
+        Shuffle the data
+        Add bias as an extra feature on the bottom of the input vector
         """
         index_shuffle = np.random.permutation(X.shape[0])
         X = X[index_shuffle]
         Y = Y[index_shuffle]
-        bias = - np.ones((X.shape[0], 1))  # put a minus in front
-        X = np.hstack((X, bias))  # changed so bias is after (before it was beginning)
+        bias_vec = self.bias * np.ones((X.shape[0], 1))  # put a minus in front
+        X = np.hstack((X, bias_vec))  # changed so bias is after (before it was beginning)
         return X, Y
 
 
@@ -132,6 +133,8 @@ class ANN:
         """
         Delta rule for computing delta w
         """
+        print("self.predictions")
+        print(self.predictions)
         diff = self.predictions - targets
         X = np.transpose(data)
         delta_w = self.learning_rate * np.dot(X, diff)
@@ -166,8 +169,9 @@ class ANN:
         """
         Plot data as classified from the NN and the decision boundary of the weights
         """
-        classA_ind = np.where(targets == 1)[0]
-        classB_ind = np.where(targets == -1)[0]
+
+        classA_ind = np.where(targets > 0)[0]
+        classB_ind = np.where(targets< 0)[0]
 
         classA_x1 = [data[:,0][i] for i in classA_ind]
         classA_x2 = [data[:,1][i] for i in classA_ind]
@@ -181,7 +185,7 @@ class ANN:
         for i in range(weights.shape[1]):
             part1 = weights[0][i]/weights[1][i]
             part2 = weights[2][i]/weights[1][i]
-            x2 = np.array([- part1*x + part2 for x in x1])
+            x2 = np.array([- part1*x - self.bias* part2 for x in x1])
             plt.plot(x1, x2, 'b', alpha=float(i+1)/(len(weights)+1))
 
         plt.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7)
