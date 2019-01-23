@@ -3,7 +3,7 @@ from generate_data import DataBase
 from ann import ANN
 
 import numpy as np
-
+np.random.seed(50)
 # Data variables
 N = 6
 n = int(N/2)  # 2 because we have n*2 data
