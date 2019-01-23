@@ -10,6 +10,12 @@ class ANN:
         self.activation_functions = {
             'step': self.step
         }
+
+        self.learning_methods = {
+            'perceptron': self.perceptron,
+            'delta_rule': self.delta_rule
+        }
+
         var_defaults = {
             "learning_rate": 0.5,
             "batch_size": 1,
@@ -21,7 +27,8 @@ class ANN:
             "test_targets": None,
             "m_weights": 0.1,
             "sigma_weights": 0.05,
-            "nodes": 1
+            "nodes": 1,
+            "learn_meth": 'perceptron'
         }
 
         for var, default in var_defaults.items():
@@ -70,7 +77,7 @@ class ANN:
             #predict (compute product of X * w)
             self.predictions = np.dot(data, self.w)  # Y_pred: NxNeurons  "the output will be an NxNeurons matrix of sum for each neuron for each input vector"
             #compute delta_w using the perceptron learning
-            delta_w = self.perceptron(data, targets)
+            delta_w = self.learn(data, targets)
             # delta_w = self.delta_rule()
             #update
             self.w = self.w - delta_w
@@ -88,6 +95,13 @@ class ANN:
         Test trained ANN
         """
         pass
+
+    def learn(self, data, targets):
+        """
+        Pass predictions through an activation function
+        """
+        function = self.learning_methods[self.learn_meth]
+        return function(data, targets)
 
     def perceptron(self, data, targets):
         """
