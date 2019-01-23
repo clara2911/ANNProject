@@ -30,11 +30,11 @@ sigmaB_non_li = 0.2
 # ANN parameters
 verbose = True
 params = {
-    "learning_rate": 0.01,
-    "batch_size": 6,
+    "learning_rate": 0.5,
+    "batch_size": 10,
     "theta": 0,
     "epsilon": 0.0,  # slack for error during training
-    "epochs": 100,
+    "epochs": 10,
     "act_fun": 'step',
     "test_data": None,
     "test_targets": None,
@@ -55,9 +55,8 @@ else:
 ann = ANN(X, Y, **params)
 ann.train(verbose=verbose, plot_dec=plot_dec)
 
-exit()
 if (linearly_separable):
     test_X, test_Y = DataBase.make_data(N, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
 else:
     test_X, test_Y = DataBase.make_non_lin_data(N, features, mA_non_lin, mB_non_li, sigmaA_non_li, sigmaB_non_li, plot=plot_data)
-ann.test(test_X, test_Y, plot_dec=plot_dec)
+#ann.test(test_X, test_Y, plot_dec=plot_dec)
