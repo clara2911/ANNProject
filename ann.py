@@ -28,14 +28,15 @@ class ANN:
             "m_weights": 0.1,
             "sigma_weights": 0.05,
             "nodes": 1,
-            "learn_meth": 'perceptron'
+            "learn_meth": 'perceptron',
+            "bias": -1
         }
 
         for var, default in var_defaults.items():
             setattr(self, var, kwargs.get(var, default))
 
         n_features = data.shape[1]
-        self.train_data, self.train_targets = self.shape_input(data, targets, n_features)
+        self.train_data, self.train_targets = self.shape_input(data, targets)
         self.w = self.init_weights(n_features)
 
 
@@ -51,15 +52,16 @@ class ANN:
         w = w.reshape(-1,1)
         return w
 
-    def shape_input(self, X, Y, n_features):
+    def shape_input(self, X, Y):
         """
-        Add bias as input vector (feature) in the data and shuffle them
+        Shuffle the data
+        Add bias as an extra feature on the bottom of the input vector
         """
         index_shuffle = np.random.permutation(X.shape[0])
         X = X[index_shuffle]
         Y = Y[index_shuffle]
-        bias = - np.ones((X.shape[0], 1))  # put a minus in front
-        X = np.hstack((X, bias))  # changed so bias is after (before it was beginning)
+        bias_vec = self.bias * np.ones((X.shape[0], 1))  # put a minus in front
+        X = np.hstack((X, bias_vec))  # changed so bias is after (before it was beginning)
         return X, Y
 
     def train(self, verbose=False):
