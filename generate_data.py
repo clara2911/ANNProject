@@ -3,7 +3,8 @@ from matplotlib import pyplot as plt
 
 class DataBase:
 
-    def make_data(n, features, mA, mB, sigmaA, sigmaB, plot=False):
+    def make_data(N, features, mA, mB, sigmaA, sigmaB, plot=False):
+        n = int(N/2)
         #generate random
         classA = np.zeros((n, features))
         targetA = np.ones((n,1))
@@ -21,6 +22,9 @@ class DataBase:
         Y = np.vstack((targetA, targetB))
 
         return X, Y
+
+    def make_non_lin_data(N, features, mA, mB, sigmaA, sigmaB, plot=False):
+        pass
 
     def plot_data(classA, classB):
         plt.scatter(classA[0,:], classA[1,:], color='cyan', alpha=0.7)

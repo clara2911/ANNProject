@@ -27,12 +27,13 @@ class ANN:
             "m_weights": 0.1,
             "sigma_weights": 0.05,
             "nodes": 1,
-            "learn_meth": 'delta_rule',
+            "learn_meth": 'perceptron',
             "bias": -1
         }
 
         for var, default in var_defaults.items():
             setattr(self, var, kwargs.get(var, default))
+
         self.n_features = data.shape[1]
         self.train_data, self.train_targets = self.shape_input(data, targets)
         self.w = self.init_weights()
@@ -60,7 +61,7 @@ class ANN:
         X = X[index_shuffle]
         Y = Y[index_shuffle]
         bias_vec = self.bias * np.ones((X.shape[0], 1))  # put a minus in front
-        X = np.hstack((X, bias_vec))  # changed so bias is after (before it was beginning)
+        X = np.hstack((X, bias_vec))  #  changed so bias is after (before it was beginning)
         return X, Y
 
 
@@ -112,6 +113,8 @@ class ANN:
         if (plot_dec):
             print('Test Error: ', error)
             self.plot_decision_boundary(test_data, targets_pred, self.w)
+
+
     def learn(self, data, targets):
         """
         Pass predictions through an activation function
@@ -133,8 +136,6 @@ class ANN:
         """
         Delta rule for computing delta w
         """
-        print("self.predictions")
-        print(self.predictions)
         diff = self.predictions - targets
         X = np.transpose(data)
         delta_w = self.learning_rate * np.dot(X, diff)
