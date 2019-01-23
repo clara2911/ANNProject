@@ -16,7 +16,7 @@ sigmaB = 0.2
 plot = False
 
 # ANN parameters
-verbose = True
+verbose = False
 params = {
     "learning_rate": 0.01,
     "batch_size": 6,

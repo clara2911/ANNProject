@@ -28,7 +28,7 @@ class ANN:
             "m_weights": 0.1,
             "sigma_weights": 0.05,
             "nodes": 1,
-            "learn_meth": 'perceptron',
+            "learn_meth": 'delta_rule',
             "bias": -1
         }
 
@@ -119,6 +119,8 @@ class ANN:
         """
         Delta rule for computing delta w
         """
+        print("self.predictions")
+        print(self.predictions)
         diff = self.predictions - targets
         X = np.transpose(data)
         delta_w = self.learning_rate * np.dot(X, diff)
@@ -150,8 +152,8 @@ class ANN:
         """
         Plot data as classified from the NN and the decision boundary of the weights
         """
-        classA_ind = np.where(self.predictions == 1)[0]
-        classB_ind = np.where(self.predictions == -1)[0]
+        classA_ind = np.where(self.predictions > 0)[0]
+        classB_ind = np.where(self.predictions < 0)[0]
 
         classA_x1 = [self.train_data[:,0][i] for i in classA_ind]
         classA_x2 = [self.train_data[:,1][i] for i in classA_ind]
@@ -159,13 +161,11 @@ class ANN:
         classB_x2 = [self.train_data[:,1][i] for i in classB_ind]
 
         # decision_boundary
-        # x1 = self.train_data[:,0]
-        # x2 = np.array([-(self.w[0]/self.w[1])*x - (self.w[2]/self.w[1]) for x in x1])
         x1 = self.train_data[:,0]
         for i in range(len(self.int_w)):
             part1 = self.int_w[i][0]/self.int_w[i][1]
             part2 = self.int_w[i][2]/self.int_w[i][1]
-            x2 = np.array([- part1*x + part2 for x in x1])
+            x2 = np.array([- part1*x - self.bias * part2 for x in x1])
             plt.plot(x1, x2, 'b', alpha=float(i+1)/(len(self.int_w)+1))
 
         plt.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7)
