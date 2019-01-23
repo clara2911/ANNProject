@@ -1,4 +1,5 @@
 import numpy as np
+import random
 from matplotlib import pyplot as plt
 
 class ANN:
@@ -76,16 +77,14 @@ class ANN:
         self.train_data_size = self.train_data.shape[0]
         while(error > self.epsilon and iteration < self.epochs):
             #initialize batch indices
-            start_batch = (iteration * self.batch_size) % self.train_data_size
-            end_batch = (start_batch + self.batch_size) % self.train_data_size  # WATCHOUT: this might become smaller than start batch
+            batch_indices = random.sample(range(self.train_data_size), self.batch_size)
             #take a random batch or sequential batch?
-            data = self.train_data[start_batch:end_batch]
-            targets = self.train_targets[start_batch:end_batch]
+            data = self.train_data[batch_indices]
+            targets = self.train_targets[batch_indices]
             #predict (compute product of X * w)
             self.predictions = np.dot(data, self.w)  # Y_pred: NxNeurons  "the output will be an NxNeurons matrix of sum for each neuron for each input vector"
             #compute delta_w using the perceptron learning
             delta_w = self.learn(data, targets)
-            # delta_w = self.delta_rule()
             #update
             self.w = self.w - delta_w
             #compute error
@@ -96,9 +95,10 @@ class ANN:
             iteration += 1
             if (verbose):
                 self.print_info(iteration, error)
+
         self.int_w = np.vstack(self.int_w)
         if (plot_dec):
-            self.plot_decision_boundary(self.train_data, self.predictions, self.int_w)
+            self.plot_decision_boundary(data, self.predictions, self.int_w)
 
 
     def test(self, test_data, test_targets, plot_dec=False):
@@ -172,7 +172,7 @@ class ANN:
         """
 
         classA_ind = np.where(targets > 0)[0]
-        classB_ind = np.where(targets< 0)[0]
+        classB_ind = np.where(targets < 0)[0]
 
         classA_x1 = [data[:,0][i] for i in classA_ind]
         classA_x2 = [data[:,1][i] for i in classA_ind]
@@ -180,8 +180,6 @@ class ANN:
         classB_x2 = [data[:,1][i] for i in classB_ind]
 
         # decision_boundary
-        # x1 = self.train_data[:,0]
-        # x2 = np.array([-(self.w[0]/self.w[1])*x - (self.w[2]/self.w[1]) for x in x1])
         x1 = data[:,0]
         for i in range(weights.shape[1]):
             part1 = weights[0][i]/weights[1][i]
