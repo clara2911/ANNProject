@@ -149,7 +149,7 @@ class ANN:
         for i in range(len(self.int_w)):
             part1 = self.int_w[i][0]/self.int_w[i][1]
             part2 = self.int_w[i][2]/self.int_w[i][1]
-            x2 = np.array([- part1*x - part2 for x in x1])
+            x2 = np.array([- part1*x + part2 for x in x1])
             plt.plot(x1, x2, 'b', alpha=float(i+1)/(len(self.int_w)+1))
 
         plt.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7)
