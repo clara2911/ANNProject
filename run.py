@@ -20,17 +20,22 @@ verbose = True
 params = {
     "learning_rate": 0.01,
     "batch_size": 6,
+    "theta": 0,
+    "epsilon": 0.0,  # slack for error during training
     "epochs": 100,
     "act_fun": 'step',
+    "test_data": None,
+    "test_targets": None,
     "m_weights": 0.1,
-    "sigma_weights": 0.5
+    "sigma_weights": 0.5,
+    "nodes": 1
 }
 
 
 # make data
 X, Y = DataBase.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot)
 # train ANN
-# NOTE: ANN assumes data of same class are grouped and are inputted sequentially
+# NOTE: ANN assumes data of same class are grouped and are inputted sequentially!
 ann = ANN(X, Y, **params)
 ann.train(verbose=verbose)
 

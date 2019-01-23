@@ -80,11 +80,8 @@ class ANN:
             # maybe even compute MSE?
             self.int_w[iteration] = self.w
             iteration += 1
-            print('Error:', error)
             if (verbose):
                 self.print_info(iteration, error)
-        print('predictions:', self.predictions)
-        print('targets:', self.train_targets)
 
     def test():
         """
@@ -144,21 +141,19 @@ class ANN:
         classA_x2 = [self.train_data[:,1][i] for i in classA_ind]
         classB_x1 = [self.train_data[:,0][i] for i in classB_ind]
         classB_x2 = [self.train_data[:,1][i] for i in classB_ind]
-        print('imt_w',self.int_w)
-        # decision_boundary = (W x = 0)
+
+        # decision_boundary
         # x1 = self.train_data[:,0]
         # x2 = np.array([-(self.w[0]/self.w[1])*x - (self.w[2]/self.w[1]) for x in x1])
-        plt.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7)
-        plt.scatter(classB_x1, classB_x2, color='purple', alpha=0.7)
         x1 = self.train_data[:,0]
         for i in range(len(self.int_w)):
             part1 = self.int_w[i][0]/self.int_w[i][1]
-            print(part1)
             part2 = self.int_w[i][2]/self.int_w[i][1]
-            print(part2)
             x2 = np.array([- part1*x - part2 for x in x1])
             plt.plot(x1, x2, 'b', alpha=float(i+1)/(len(self.int_w)+1))
 
+        plt.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7)
+        plt.scatter(classB_x1, classB_x2, color='purple', alpha=0.7)
         plt.ylim([-2, 2])
         plt.show()
 
