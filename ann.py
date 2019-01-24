@@ -10,7 +10,7 @@ class ANN:
         self.activation_functions = {
             'step': self.step
         }
-        self.learning_methods = {
+        self.learning_method = {
             'perceptron': self.perceptron,
             'delta_rule': self.delta_rule
         }
@@ -21,8 +21,6 @@ class ANN:
             "epsilon": 0.0,
             "epochs": 10,
             "act_fun": 'step',
-            "test_data": None,
-            "test_targets": None,
             "m_weights": 0.1,
             "sigma_weights": 0.05,
             "nodes": 1,
@@ -37,13 +35,14 @@ class ANN:
         self.n_features = data.shape[1]
         self.train_data, self.train_targets = self.shape_input(data, targets)
         self.w = self.init_weights()
+        self.error_history = []
 
 
     def init_weights(self):
         """
         Initialize weight matrix Features x Neurons
         """
-        w = np.random.normal(self.m_weights, self.sigma_weights,self.n_features + 1)  # + 1 is bias
+        w = np.random.normal(self.m_weights, self.sigma_weights, self.n_features + 1)  # + 1 is bias
 
         for j in range(self.nodes - 1):
             w_j = np.random.normal(self.m_weights, self.sigma_weights, self.n_features + 1)  # + 1 is bias
@@ -51,55 +50,93 @@ class ANN:
         w = w.reshape(-1,1)
         return w
 
-
     def shape_input(self, X, Y):
         """
-        Shuffle the data
-        Add bias as an extra feature on the bottom of the input vector
+        Add bias as input vector (feature) in the data and shuffle them
         """
         index_shuffle = np.random.permutation(X.shape[0])
         X = X[index_shuffle]
         Y = Y[index_shuffle]
-        bias_vec = self.bias * np.ones((X.shape[0], 1))  # put a minus in front
-        X = np.hstack((X, bias_vec))  #  changed so bias is after (before it was beginning)
+        bias = - np.ones((X.shape[0], 1))  # put a minus in front
+        X = np.hstack((X, bias))  # changed so bias is after (before it was beginning)
         return X, Y
 
-
-    def train(self, verbose=False, plot_dec=False):
+    def train_batch(self, verbose=False):
         """
         Train neural network
         """
-        self.train_data_size = self.train_data.shape[0]
-        for iteration in range(self.epochs):
-            #initialize batch indices
-            start_batch = (iteration * self.batch_size) % self.train_data_size
-            end_batch = (start_batch + self.batch_size) % self.train_data_size  # WATCHOUT: this might become smaller than start batch
+        iteration = 0
+        self.int_w = {}
+        self.error_history = []
+        while iteration < self.epochs:
             #take a random batch or sequential batch?
-            data = self.train_data[start_batch:end_batch]
-            targets = self.train_targets[start_batch:end_batch]
+            data = self.train_data
+            targets = self.train_targets
+
             #predict (compute product of X * w)
             self.sum = np.dot(data, self.w)  # Y_pred: NxNeurons  "the output will be an NxNeurons matrix of sum for each neuron for each input vector"
 
             # compute delta_w
             delta_w = self.learn(data, targets)
+            self.error_history.append(self.error)
 
             if self.error <= self.epsilon:
                 if (verbose):
                     self.print_info(iteration, self.error)
                 break
-                
+
+            # This comment is by Francesco
             #update
             self.w = self.w - delta_w
-            self.int_w.append(self.w)
+            self.int_w[iteration] = self.w
 
             # maybe even compute MSE?
             if (verbose):
                 self.print_info(iteration, self.error)
-        self.int_w = np.vstack(self.int_w)
-        if (plot_dec):
-            self.plot_decision_boundary(self.train_data, self.predictions, self.int_w)
+            iteration += 1
 
-    def test(self, test_data, test_targets, plot_dec=False):
+    def train_sequential(self, verbose=False):
+        """
+        Train neural network
+        """
+        iteration = 0
+        self.int_w = {}
+        self.error_history = []
+        # take a random batch or sequential batch?
+        data = self.train_data
+        targets = self.train_targets
+        self.predictions = np.empty(len(targets))
+        while iteration < self.epochs:
+
+            for nd, d in enumerate(data):
+                #predict (compute product of X * w)
+                self.sum = np.dot(d, self.w)  # Y_pred: NxNeurons  "the output will be an NxNeurons matrix of sum for each neuron for each input vector"
+                # compute delta_w
+                delta_w = self.learn(d, targets[nd], num_data = nd)
+                #update
+                self.w = self.w - delta_w.reshape(-1,1)
+
+            # compute error
+            self.sum = np.dot(data, self.w)
+            self.predictions = self.activation_function()
+            if self.learning_method == 'perceptron':
+                self.error = self.missclass_error(self.predictions, targets)
+            else:
+                self.error = np.mean((self.sum - targets) ** 2)  # mse
+
+            self.error_history.append(self.error)
+            if self.error <= self.epsilon:
+                if (verbose):
+                    self.print_info(iteration, self.error)
+                break
+
+            self.int_w[iteration] = self.w
+
+            if (verbose):
+                self.print_info(iteration, self.error)
+            iteration += 1
+
+    def test(self, test_data, test_targets):
         """
         Test trained ANN
         """
@@ -108,69 +145,67 @@ class ANN:
         targets_pred = self.activation_function(test_predictions)
 
         error = self.missclass_error(targets_pred, test_targets)
-        if (plot_dec):
-            print('Test Error: ', error)
-            self.plot_decision_boundary(test_data, targets_pred, self.w)
+
+        print('Test Error: ', error)
 
 
-    def learn(self, data, targets):
-        """
-        Pass predictions through an activation function
-        """
-        function = self.learning_methods[self.learn_meth]
-        return function(data, targets)
-
-    def learn(self, data, targets):
+    def learn(self, data, targets, num_data=None):
         function = self.learning_method[self.learn_method]
-        return function(data, targets)
+        return function(data, targets, num_data=num_data)
 
-    def perceptron(self, data, targets):
+    def perceptron(self, data, targets, num_data=None):
         """
         Perceptron learning
         """
         #pass result through activation function
-        self.predictions = self.activation_function(targets)
-        diff = self.predictions - targets
         X = np.transpose(data)
-        delta_w = self.learning_rate * np.dot(X, diff)
+        if num_data==None:
+            self.predictions = self.activation_function()
+            diff = self.predictions - targets
+            delta_w = self.learning_rate * np.dot(X, diff)
+            # compute error
+            self.error = self.missclass_error(self.predictions, targets)
+        else:
+            self.predictions[num_data] = self.activation_function()
+            diff = self.predictions[num_data] - targets
+            delta_w = self.learning_rate * np.multiply( X , diff)
 
-        # compute error
-        self.error = self.missclass_error()
-        self.error_history.append(self.error)
         return delta_w
 
 
-    def delta_rule(self, data, targets):
+    def delta_rule(self, data, targets, num_data=None):
         """
         Delta rule for computing delta w
         """
-        diff = self.sum - targets
         X = np.transpose(data)
-        delta_w = self.learning_rate * np.dot(X, diff)
-        self.predictions = self.activation_function()
 
-        # compute error
-        self.error = np.mean(diff**2) #mse
-        self.error_history.append(self.error)
+        if num_data == None:
+            self.predictions = self.activation_function()
+            diff = self.sum - targets
+            delta_w = self.learning_rate * np.dot(X, diff)
+            # compute error
+            self.error = np.mean(diff ** 2)  # mse
+        else:
+            self.predictions[num_data] = self.activation_function()
+            diff = self.sum - targets
+            delta_w = self.learning_rate * np.multiply(X, diff)
 
         return delta_w
 
 
-    def step(self, targets):
+    def step(self):
         """
         Set predictions to 1 or -1 depending on threshold theta
         """
-        Y_threshed = np.where(self.sum > self.theta, 1, -1)  #TODO why not targets?
+        Y_threshed = np.where(self.sum > self.theta, 1, -1)
         return Y_threshed
 
-
-    def activation_function(self, targets):
+    def activation_function(self):
         """
         Pass predictions through an activation function
         """
         function = self.activation_functions[self.act_fun]
-        return function(targets)
-
+        return function()
 
     def missclass_error(self, predictions, targets):
         """
@@ -179,13 +214,22 @@ class ANN:
         miss = len(np.where(predictions != targets)[0])
         return float(miss/len(targets))
 
-    def plot_decision_boundary_sequence(self, scatter = True):
-
+    def plot_decision_boundary_sequence(self, scatter = True, data=None, targets=None):
+        """
+        Plot data as classified from the NN and the sequence
+        of decision boundaries of the weights
+        """
         fig, ax = plt.subplots()
         classA_ind = np.where(self.predictions > 0)[0]
         classB_ind = np.where(self.predictions <= 0)[0]
-      
-        x1 = self.train_data[:, 0]
+
+        classA_x1 = [data[:,0][i] for i in classA_ind]
+        classA_x2 = [data[:,1][i] for i in classA_ind]
+        classB_x1 = [data[:,0][i] for i in classB_ind]
+        classB_x2 = [data[:,1][i] for i in classB_ind]
+
+        # decision_boundary
+        x1 = data[:, 0]
         for i in range(len(self.int_w)):
             part1 = self.int_w[i][0] / self.int_w[i][1]
             part2 = self.int_w[i][2] / self.int_w[i][1]
@@ -205,29 +249,24 @@ class ANN:
         plt.close()
         return
 
-    def plot_decision_boundary(self, data, targets, weights, scatter=True, ann_list=None):
+    def plot_decision_boundary(self, scatter = True, ann_list = None, data=None, targets=None):
         """
-        Plot data as classified from the NN and the sequence
-        of decision boundaries of the weights
+        Plot data as classified from the NN and the decision boundary of the weights
         """
         fig, ax = plt.subplots()
-        classA_ind = np.where(targets > 0)[0]
-        classB_ind = np.where(targets< 0)[0]
+        classA_ind = np.where(self.predictions > 0)[0]
+        classB_ind = np.where(self.predictions <= 0)[0]
 
         classA_x1 = [data[:,0][i] for i in classA_ind]
         classA_x2 = [data[:,1][i] for i in classA_ind]
         classB_x1 = [data[:,0][i] for i in classB_ind]
         classB_x2 = [data[:,1][i] for i in classB_ind]
-        
-        
+
         # decision_boundary
-        x1 = data[:,0]
-        #x1 = np.arange(np.min(self.train_data[:, 0]), np.max(self.train_data[:, 0]), 0.1)
-        #         for i in range(weights.shape[1]):  weights[0][i]
-        part1 = weights[0] / weights[1]
-        part2 = weights[2] / weights[1]
+        x1 = data[:, 0]
+        part1 = self.w[0] / self.w[1]
+        part2 = self.w[2] / self.w[1]
         x2 = np.array([- part1 * x + part2 for x in x1])
-        # x2 = np.array([- part1*x - self.bias* part2 for x in x1])
         ax.plot(x1, x2, '--', alpha=0.5, label = self.learn_method)
 
         if ann_list:
@@ -247,7 +286,9 @@ class ANN:
         ax.set_xlabel('$x_1$', fontsize=18)
         ax.set_ylabel('$x_2$', fontsize=18)
         plt.savefig('3_1_2_1.eps')
-        
+        plt.show()
+        plt.close()
+        return
 
     def plot_error_history(self):
         """
@@ -257,7 +298,6 @@ class ANN:
         y_axis = self.error_history
         plt.scatter(x_axis, y_axis, color='purple', alpha=0.7)
         plt.show()
-
 
     def print_info(self, iteration, error):
         print('Iter: {}'.format(iteration))

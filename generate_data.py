@@ -6,8 +6,12 @@ class DataBase:
     def __init__(self):
         self.function = 'Hello, use me for plotting!'
 
-    def make_data(N, features, mA, mB, sigmaA, sigmaB, plot=False):
-        n = int(N/2)
+    def plot_data(self, classA, classB):
+        plt.scatter(classA[0,:], classA[1,:], color='cyan', alpha=0.7)
+        plt.scatter(classB[0,:], classB[1,:], color='purple', alpha=0.7)
+        plt.show()
+
+    def make_data(self, n, features, mA, mB, sigmaA, sigmaB, plot=False):
         #generate random
         classA = np.zeros((n, features))
         targetA = np.ones((n,1))
@@ -26,11 +30,3 @@ class DataBase:
 
         return X, Y
 
-
-    def make_non_lin_data(N, features, mA, mB, sigmaA, sigmaB, plot=False):
-        pass
-
-    def plot_data(classA, classB):
-        plt.scatter(classA[0,:], classA[1,:], color='cyan', alpha=0.7)
-        plt.scatter(classB[0,:], classB[1,:], color='purple', alpha=0.7)
-        plt.show()
