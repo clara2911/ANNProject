@@ -10,7 +10,7 @@ class ANN:
         self.activation_functions = {
             'step': self.step
         }
-        self.learning_methods = {
+        self.learning_method = {
             'perceptron': self.perceptron,
             'delta_rule': self.delta_rule
         }
