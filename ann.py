@@ -10,7 +10,7 @@ class ANN:
         self.activation_functions = {
             'step': self.step
         }
-        self.learning_method = {
+        self.learning_methods = {
             'perceptron': self.perceptron,
             'delta_rule': self.delta_rule
         }
@@ -59,8 +59,8 @@ class ANN:
         index_shuffle = np.random.permutation(X.shape[0])
         X = X[index_shuffle]
         Y = Y[index_shuffle]
-        bias = - np.ones((X.shape[0], 1))  # put a minus in front
-        X = np.hstack((X, bias))  # changed so bias is after (before it was beginning)
+        bias_vec = self.bias * np.ones((X.shape[0], 1))  # put a minus in front
+        X = np.hstack((X, bias_vec))  #  changed so bias is after (before it was beginning)
         return X, Y
 
     def train_batch(self, verbose=False):
