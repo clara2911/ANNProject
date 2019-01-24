@@ -91,9 +91,9 @@ def compare_learning_rate(X, Y):
 
 def compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=False):
     X, Y = data_base.non_linear_data(sampleA=sampleA, sampleB=sampleB, subsamples=subsamples)
-    #mask = Y == 1
-    #mask2 = Y == -1
-    #data_base.plot_data(classA=X[:,mask], classB=X[:,mask2])
+    mask = np.where(Y == 1)[0]
+    mask2 = np.where(Y == -1)[0]
+    data_base.plot_data(classA=X[mask,:].T, classB=X[mask2,:].T)
     params = {
         "learning_rate": 0.001,
         "batch_size": 6,
