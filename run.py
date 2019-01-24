@@ -3,17 +3,29 @@ from generate_data import DataBase
 from ann import ANN
 import matplotlib.pylab as plt
 import numpy as np
-np.random.seed(50)
+
+# np.random.seed(50)
 # Data variables
-N = 200
-n = int(N/2)  # 2 because we have n*2 data
+N = 100  # Size of training dataset
 features = 2  # input vectors / patterns
+
+test_N = 20  # number of test data
+
+plot_data = False
+plot_dec = True  # plot decision_boundary
 
 mA = np.array([ 1.0, 0.5])
 sigmaA = 0.2
 mB = np.array([-1.0, 0.0])
 sigmaB = 0.2
-plot = False
+
+linearly_separable = True
+
+mA_non_lin = np.array([ 1.0, 0.3])
+sigmaA_non_li = 0.2
+mB_non_li = np.array([ 0.0, -0.1])
+sigmaB_non_li = 0.2
+
 
 # # COMPARISON BETWEEN PERCEPTRON AND DELTA RULE USING BATCH =================================
 # # ANN parameters
@@ -86,3 +98,21 @@ for e in eta:
     #ax.set_xlim(0, 40)
 ax.legend()
 plt.show()
+
+
+# make data
+if (linearly_separable):
+    X, Y = DataBase.make_data(N, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
+else:
+    X, Y = DataBase.make_non_lin_data(N, features, mA_non_lin, mB_non_li, sigmaA_non_li, sigmaB_non_li, plot=plot_data)
+# train ANN
+# NOTE: ANN assumes data of same class are grouped and are inputted sequentially!
+ann = ANN(X, Y, **params)
+ann.train(verbose=verbose, plot_dec=plot_dec)
+
+exit()
+if (linearly_separable):
+    test_X, test_Y = DataBase.make_data(N, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
+else:
+    test_X, test_Y = DataBase.make_non_lin_data(N, features, mA_non_lin, mB_non_li, sigmaA_non_li, sigmaB_non_li, plot=plot_data)
+ann.test(test_X, test_Y, plot_dec=plot_dec)
