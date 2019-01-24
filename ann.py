@@ -44,11 +44,13 @@ class ANN:
         """
         w = np.random.normal(self.m_weights, self.sigma_weights, self.n_features + 1)  # + 1 is bias
 
-        for j in range(self.nodes - 1):
-            w_j = np.random.normal(self.m_weights, self.sigma_weights, self.n_features + 1)  # + 1 is bias
-            w = np.vstack((w, w_j))
-        w = w.reshape(-1,1)
-        return w
+        if (self.nodes == 1):
+            return w.reshape(-1,1)
+        else:
+            for j in range(self.nodes - 1):
+                w_j = np.random.normal(self.m_weights, self.sigma_weights, self.n_features + 1)  # + 1 is bias
+                w = np.vstack((w, w_j))
+        return w.T
 
     def shape_input(self, X, Y):
         """
@@ -142,11 +144,13 @@ class ANN:
         """
         test_data, test_targets = self.shape_input(test_data, test_targets)
         test_predictions = np.dot(test_data, self.w)
-        targets_pred = self.activation_function(test_predictions)
+        self.sum = test_predictions
+        targets_pred = self.activation_function()
 
         error = self.missclass_error(targets_pred, test_targets)
 
         print('Test Error: ', error)
+        return error
 
 
     def learn(self, data, targets, num_data=None):
