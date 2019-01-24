@@ -3,6 +3,9 @@ from matplotlib import pyplot as plt
 
 class DataBase:
 
+    def __init__(self):
+        self.function = 'Hello, use me for plotting!'
+
     def make_data(N, features, mA, mB, sigmaA, sigmaB, plot=False):
         n = int(N/2)
         #generate random
@@ -16,12 +19,13 @@ class DataBase:
             classB[:,feature] = np.random.normal(mB[feature], sigmaB, n)
 
         if (plot):
-            plot_data(classA, classB)
+            self.plot_data(classA, classB)
 
         X = np.vstack((classA, classB))
         Y = np.vstack((targetA, targetB))
 
         return X, Y
+
 
     def make_non_lin_data(N, features, mA, mB, sigmaA, sigmaB, plot=False):
         pass
