@@ -10,6 +10,10 @@ class ANN:
         self.activation_functions = {
             'step': self.step
         }
+        self.learning_method = {
+            'perceptron': self.perceptron,
+            'delta_rule': self.delta_rule
+        }
         var_defaults = {
             "learning_rate": 0.5,
             "batch_size": 1,
@@ -21,7 +25,9 @@ class ANN:
             "test_targets": None,
             "m_weights": 0.1,
             "sigma_weights": 0.05,
-            "nodes": 1
+            "nodes": 1,
+            "learn_method": 'perceptron',
+            "error": 1.0
         }
 
         for var, default in var_defaults.items():
@@ -60,28 +66,33 @@ class ANN:
         Train neural network
         """
         iteration = 0
-        error = 1.
         self.int_w = {}
         self.error_history = []
-        while(error > self.epsilon and iteration < self.epochs):
+        while iteration < self.epochs:
             #take a random batch or sequential batch?
             data = self.train_data
             targets = self.train_targets
+
             #predict (compute product of X * w)
-            self.predictions = np.dot(data, self.w)  # Y_pred: NxNeurons  "the output will be an NxNeurons matrix of sum for each neuron for each input vector"
-            #compute delta_w using the perceptron learning
-            delta_w = self.perceptron(data, targets)
-            # delta_w = self.delta_rule()
+            self.sum = np.dot(data, self.w)  # Y_pred: NxNeurons  "the output will be an NxNeurons matrix of sum for each neuron for each input vector"
+
+            # compute delta_w
+            delta_w = self.learn(data, targets)
+
+            if self.error <= self.epsilon:
+                if (verbose):
+                    self.print_info(iteration, self.error)
+                break
+
+            # This comment is by Francesco
             #update
             self.w = self.w - delta_w
-            #compute error
-            error = self.missclass_error()
-            self.error_history.append(error)
-            # maybe even compute MSE?
             self.int_w[iteration] = self.w
-            iteration += 1
+
+            # maybe even compute MSE?
             if (verbose):
-                self.print_info(iteration, error)
+                self.print_info(iteration, self.error)
+            iteration += 1
 
     def test():
         """
@@ -89,13 +100,24 @@ class ANN:
         """
         pass
 
+    def learn(self, data, targets):
+        function = self.learning_method[self.learn_method]
+        return function(data, targets)
+
     def perceptron(self, data, targets):
         """
         Perceptron learning
         """
         #pass result through activation function
         self.predictions = self.activation_function()
-        delta_w = self.delta_rule(data, targets)
+        diff = self.predictions - targets
+        X = np.transpose(data)
+        delta_w = self.learning_rate * np.dot(X, diff)
+
+        # compute error
+        self.error = self.missclass_error()
+        self.error_history.append(self.error)
+
         return delta_w
 
 
@@ -103,9 +125,15 @@ class ANN:
         """
         Delta rule for computing delta w
         """
-        diff = self.predictions - targets
+        diff = self.sum - targets
         X = np.transpose(data)
         delta_w = self.learning_rate * np.dot(X, diff)
+        self.predictions = self.activation_function()
+
+        # compute error
+        self.error = np.mean(diff**2) #mse
+        self.error_history.append(self.error)
+
         return delta_w
 
 
@@ -113,7 +141,7 @@ class ANN:
         """
         Set predictions to 1 or -1 depending on threshold theta
         """
-        Y_threshed = np.where(self.predictions > self.theta, 1, -1)
+        Y_threshed = np.where(self.sum > self.theta, 1, -1)
         return Y_threshed
 
     def activation_function(self):
@@ -130,12 +158,14 @@ class ANN:
         miss = len(np.where(self.predictions != self.train_targets)[0])
         return float(miss/len(self.train_targets))
 
-    def plot_decision_boundary(self):
+    def plot_decision_boundary_sequence(self, scatter = True):
         """
-        Plot data as classified from the NN and the decision boundary of the weights
+        Plot data as classified from the NN and the sequence
+        of decision boundaries of the weights
         """
-        classA_ind = np.where(self.predictions == 1)[0]
-        classB_ind = np.where(self.predictions == -1)[0]
+        fig, ax = plt.subplots()
+        classA_ind = np.where(self.predictions > 0)[0]
+        classB_ind = np.where(self.predictions <= 0)[0]
 
         classA_x1 = [self.train_data[:,0][i] for i in classA_ind]
         classA_x2 = [self.train_data[:,1][i] for i in classA_ind]
@@ -143,19 +173,67 @@ class ANN:
         classB_x2 = [self.train_data[:,1][i] for i in classB_ind]
 
         # decision_boundary
-        # x1 = self.train_data[:,0]
-        # x2 = np.array([-(self.w[0]/self.w[1])*x - (self.w[2]/self.w[1]) for x in x1])
-        x1 = self.train_data[:,0]
+        x1 = self.train_data[:, 0]
         for i in range(len(self.int_w)):
-            part1 = self.int_w[i][0]/self.int_w[i][1]
-            part2 = self.int_w[i][2]/self.int_w[i][1]
-            x2 = np.array([- part1*x + part2 for x in x1])
-            plt.plot(x1, x2, 'b', alpha=float(i+1)/(len(self.int_w)+1))
+            part1 = self.int_w[i][0] / self.int_w[i][1]
+            part2 = self.int_w[i][2] / self.int_w[i][1]
+            x2 = np.array([- part1 * x + part2 for x in x1])
+            ax.plot(x1, x2, 'b', alpha=float(i + 1) / (len(self.int_w) + 1))
 
-        plt.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7)
-        plt.scatter(classB_x1, classB_x2, color='purple', alpha=0.7)
-        plt.ylim([-2, 2])
+        part1 = self.w[0] / self.w[1]
+        part2 = self.w[2] / self.w[1]
+        x2 = np.array([- part1 * x + part2 for x in x1])
+        ax.plot(x1, x2, 'r')
+
+        if scatter:
+            ax.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7, s=7)
+            ax.scatter(classB_x1, classB_x2, color='purple', alpha=0.7, s=7)
+
         plt.show()
+        plt.close()
+        return
+
+    def plot_decision_boundary(self, scatter = True, ann_list = None):
+        """
+        Plot data as classified from the NN and the decision boundary of the weights
+        """
+        fig, ax = plt.subplots()
+        classA_ind = np.where(self.predictions > 0)[0]
+        classB_ind = np.where(self.predictions <= 0)[0]
+
+        classA_x1 = [self.train_data[:,0][i] for i in classA_ind]
+        classA_x2 = [self.train_data[:,1][i] for i in classA_ind]
+        classB_x1 = [self.train_data[:,0][i] for i in classB_ind]
+        classB_x2 = [self.train_data[:,1][i] for i in classB_ind]
+
+        # decision_boundary
+        x1 = self.train_data[:, 0]
+        #x1 = np.arange(np.min(self.train_data[:, 0]), np.max(self.train_data[:, 0]), 0.1)
+        part1 = self.w[0] / self.w[1]
+        part2 = self.w[2] / self.w[1]
+        x2 = np.array([- part1 * x + part2 for x in x1])
+        ax.plot(x1, x2, '--', alpha=0.5, label = self.learn_method)
+
+        if ann_list:
+            for ann in ann_list:
+                part1 = ann.w[0] / ann.w[1]
+                part2 = ann.w[2] / ann.w[1]
+                x2 = np.array([- part1 * x - part2 for x in x1])
+                ax.plot(x1, x2, '--', alpha=0.5, label=ann.learn_method)
+
+        if scatter:
+            ax.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7, s=7)
+            ax.scatter(classB_x1, classB_x2, color='purple', alpha=0.7, s=7)
+
+        #ax.set_xlim(np.min(x1) - 0.1, np.max(x1) + 0.1)
+        #ax.set_ylim(np.min(self.train_data[:, 1]) - 0.1, np.max(self.train_data[:, 1]) + 0.1)
+        ax.legend(frameon=False)
+        ax.set_xlabel('$x_1$', fontsize=18)
+        ax.set_ylabel('$x_2$', fontsize=18)
+        plt.savefig('3_1_2_1.eps')
+        plt.show()
+        plt.close()
+        return
 
     def plot_error_history(self):
         """
