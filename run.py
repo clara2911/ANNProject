@@ -41,7 +41,7 @@ def compare_perc_delta(X, Y):
         "test_data": None,
         "test_targets": None,
         "m_weights": 0.1,
-        "sigma_weights": 0.5,
+        "sigma_weights": 0.2,
         "nodes": 2,
         "learn_method": 'perceptron'
     }
@@ -51,16 +51,16 @@ def compare_perc_delta(X, Y):
 
     #perceptron
     ann_P = ANN(X, Y, **params)
-    #ann_P.train_batch(verbose=verbose)
-    ann_P.train_sequential(verbose=verbose)
+    ann_P.train_batch(verbose=verbose)
+    #ann_P.train_sequential(verbose=verbose)
     ann_P.plot_decision_boundary_sequence(scatter = True, data=ann_P.train_data, targets=ann_P.train_targets)
     ann_P.test(test_X, test_Y)
 
     #delta rule
     params['learn_method'] = 'delta_rule'
     ann_D = ANN(X, Y, **params)
-    #ann_D.train_batch(verbose=verbose)
-    ann_D.train_sequential(verbose=verbose)
+    ann_D.train_batch(verbose=verbose)
+    # ann_D.train_sequential(verbose=verbose)
     ann_D.plot_decision_boundary_sequence(scatter = True, data=ann_D.train_data, targets=ann_D.train_targets)
 
     ann_P.plot_decision_boundary(ann_list=[ann_D], data=ann_P.train_data, targets=ann_P.train_targets)
