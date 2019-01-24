@@ -89,6 +89,35 @@ def compare_learning_rate(X, Y):
     ax.legend()
     plt.show()
 
-compare_learning_rate(X,Y)
-compare_perc_delta(X, Y)
+def compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=False):
+    X, Y = data_base.non_linear_data(sampleA=sampleA, sampleB=sampleB, subsamples=subsamples)
+    #mask = Y == 1
+    #mask2 = Y == -1
+    #data_base.plot_data(classA=X[:,mask], classB=X[:,mask2])
+    params = {
+        "learning_rate": 0.001,
+        "batch_size": 6,
+        "theta": 0,
+        "epsilon": 0.0,  # slack for error during training
+        "epochs": 100,
+        "act_fun": 'step',
+        "test_data": None,
+        "test_targets": None,
+        "m_weights": 0,
+        "sigma_weights": 0.5,
+        "nodes": 1,
+        "learn_method": 'delta_rule'
+    }
 
+    ann = ANN(X, Y, **params)
+    ann.train_batch(verbose=True)
+    if subsamples:
+        title = '20% from classA(1,:)<0 and 80% from classA(1,:)>0'
+    else:
+        title = '{}% from class A and {}% from class B'.format(sampleA*100, sampleB*100)
+    ann.plot_decision_boundary(scatter = True, data=ann.train_data, targets=ann.train_targets, title=title)
+
+
+#compare_learning_rate(X,Y)
+#compare_perc_delta(X, Y)
+compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=True)

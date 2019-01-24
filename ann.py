@@ -214,7 +214,7 @@ class ANN:
         miss = len(np.where(predictions != targets)[0])
         return float(miss/len(targets))
 
-    def plot_decision_boundary_sequence(self, scatter = True, data=None, targets=None):
+    def plot_decision_boundary_sequence(self, scatter = True, data=None, targets=None, string=None):
         """
         Plot data as classified from the NN and the sequence
         of decision boundaries of the weights
@@ -244,12 +244,14 @@ class ANN:
         if scatter:
             ax.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7, s=7)
             ax.scatter(classB_x1, classB_x2, color='purple', alpha=0.7, s=7)
-
+        ax.set_xlim(np.min(data[:, 0]) - 0.1, np.max(data[:, 0]) + 0.1)
+        ax.set_ylim(np.min(data[:, 1]) - 0.1, np.max(data[:, 1]) + 0.1)
+        ax.set_title(string)
         plt.show()
         plt.close()
         return
 
-    def plot_decision_boundary(self, scatter = True, ann_list = None, data=None, targets=None):
+    def plot_decision_boundary(self, scatter = True, ann_list = None, data=None, targets=None, title=None):
         """
         Plot data as classified from the NN and the decision boundary of the weights
         """
@@ -285,7 +287,9 @@ class ANN:
         ax.legend(frameon=False)
         ax.set_xlabel('$x_1$', fontsize=18)
         ax.set_ylabel('$x_2$', fontsize=18)
-        plt.savefig('3_1_2_1.eps')
+        ax.set_title(title)
+        words_title = title.split(' ')
+        plt.savefig('3_1_3_{}_{}.eps'.format(words_title[0], words_title[5]))
         plt.show()
         plt.close()
         return
