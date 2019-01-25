@@ -1,3 +1,9 @@
+"""
+Generate data for different purposes
+
+Authors: Clara Tump, Kostis SZ... and Romina Azz...
+"""
+
 import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -36,7 +42,6 @@ class DataBase:
 
         X = np.vstack((classA, classB))
         Y = np.vstack((targetA, targetB))
-
         return X, Y
 
     def non_linear_data(self, sampleA = 1.0, sampleB = 1.0, subsamples = False):
@@ -107,3 +112,9 @@ class DataBase:
         patterns = np.hstack((X.reshape((ndata,1)), Y.reshape((ndata,1))))
 
         return patterns, targets
+
+    # make one-hot encoding matrix where pos=1 and neg=-1 of length N
+    def one_hot(self, N):
+        X = -1*np.ones([N,N])
+        X[range(N), range(N)] = 1
+        return X
