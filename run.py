@@ -1,34 +1,53 @@
-# import local files
+#!/usr/bin/env python
+"""
+Main file for learning with a single layer perceptron
+It contains 3 tests:
+- the difference between perceptron learning rule and delta learning rule
+- the influence of the learning rate
+- the influence of the bias
+
+Authors: Clara Tump, Kostis SZ and Romina Azz
+"""
+
 from generate_data import DataBase
 from ann import ANN
 import matplotlib.pylab as plt
 import numpy as np
 
 
-# Data variables
-N = 200
-n = int(N/2)  # 2 because we have n*2 data
-features = 2  # input vectors / patterns
+def main():
+    # Data variables
+    N = 200
+    n = int(N/2)  # 2 because we have n*2 data
+    features = 2  # input vectors / patterns
 
-mA = np.array([ 1.0, 0.5])
-sigmaA = 0.2
-mB = np.array([-1.0, 0.0])
-sigmaB = 0.2
+    mA = np.array([ 1.0, 0.5])
+    sigmaA = 0.2
+    mB = np.array([-1.0, 0.0])
+    sigmaB = 0.2
 
-test_n = 50
-test_mA = np.array([ 1.0, 0.5])
-test_sigmaA = 0.2
-test_mB = np.array([-1.0, 0.0])
-test_sigmaB = 0.2
+    test_n = 50
+    test_mA = np.array([ 1.0, 0.5])
+    test_sigmaA = 0.2
+    test_mB = np.array([-1.0, 0.0])
+    test_sigmaB = 0.2
+    plot_data = False
 
-data_base = DataBase()
-X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
-test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data)
+    data_base = DataBase()
+    X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
+    test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data)
 
-# COMPARISON BETWEEN PERCEPTRON AND DELTA RULE USING BATCH =================================
-# ANN parameters
+    # choose one of the 3 experiments
+    # compare_perc_delta(X, Y)
+    #compare_learning_rate(X,Y)
+    bias_influence(X,Y)
+
 def compare_perc_delta(X, Y):
-    #in here we use batch
+    '''
+    COMPARISON BETWEEN PERCEPTRON AND DELTA RULE USING BATCH
+    :param X: the input data (N (number of inputs) x M (number of features before bias)
+    :param Y: the output targets (1 x N)
+    '''
     verbose = True
     params = {
         "learning_rate": 0.001,
@@ -67,12 +86,12 @@ def compare_perc_delta(X, Y):
     error_1 = ann_D.test(test_X, test_Y)
     error_2 = ann_P.test(test_X, test_Y)
 
-
-
-# COMPARISON BETWEEN PERCEPTRON AND DELTA RULE RESPECT LEARNING RATE =================================
-# ANN parameters
 def compare_learning_rate(X, Y):
-    # here we use batch
+    '''
+    COMPARISON BETWEEN PERCEPTRON AND DELTA RULE RESPECT LEARNING RATE using batch learning
+    :param X: the input data (N (number of inputs) x M (number of features before bias)
+    :param Y: the output targets (1 x N)
+    '''
     verbose = True
 
     fig, ax = plt.subplots()
@@ -101,13 +120,14 @@ def compare_learning_rate(X, Y):
     ax.legend()
     plt.show()
 
-
 def bias_influence(X,Y):
-    # here we use batch
-    verbose = True
-
-
-    fig, ax = plt.subplots()
+    '''
+    illustrate the capabilities of the model without the addition of bias
+    Using batch learning and the delta_rule
+    :param X: the input data (N (number of inputs) x M (number of features before bias)
+    :param Y: the output targets (1 x N)
+    '''
+    verbose = False
     params = {
         "learning_rate": 0.1,
         "batch_size": 1,
@@ -120,12 +140,11 @@ def bias_influence(X,Y):
         "m_weights": 0,
         "sigma_weights": 0.5,
         "nodes": 1,
-        "learn_method": 'perceptron',  # 'delta_rule' or 'perceptron'
+        "learn_method": 'delta_rule',
         "bias": 0
     }
     ann = ANN(X, Y, **params)
     ann.train_batch(verbose=verbose)
-    # ax.plot(range(len(ann.error_history)), ann.error_history)
     ann.plot_decision_boundary(
             data=ann.train_data,
             plot_intermediate=True,
@@ -134,7 +153,6 @@ def bias_influence(X,Y):
             origin_grid=True
             )
 
+if __name__ == "__main__":
+    main()
 
-# compare_perc_delta(X, Y)
-#compare_learning_rate(X,Y)
-bias_influence(X,Y)
