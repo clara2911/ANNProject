@@ -64,6 +64,7 @@ class ANN:
     def train_batch(self, verbose=False):
         """
         Train neural network
+        We see all the data and sum all the deltas in order to make a unique update per epoch.
         """
         iteration = 0
         self.int_w = {}
@@ -97,7 +98,8 @@ class ANN:
 
     def train_sequential(self, verbose=False):
         """
-        Train neural network
+        Train neural network using sequential method.
+        In each epoch we update the weights each time we see a sample.
         """
         iteration = 0
         self.int_w = {}

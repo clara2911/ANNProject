@@ -7,12 +7,19 @@ class DataBase:
         self.function = 'Hello, use me for plotting!'
 
     def plot_data(self, classA, classB):
+        """
+        This function just plot the data with scatter, raw data, no-boundaries
+        """
         plt.scatter(classA[0,:], classA[1,:], color='cyan', alpha=0.7, s=7)
         plt.scatter(classB[0,:], classB[1,:], color='purple', alpha=0.7, s=7)
         plt.axis('tight')
         plt.show()
 
     def make_data(self, n, features, mA, mB, sigmaA, sigmaB, plot=False):
+        """
+        This functions creates data for 2 classes with a
+        gaussian distribution given the parameters in args.
+        """
         #generate random
         classA = np.zeros((n, features))
         targetA = np.ones((n,1))
@@ -32,6 +39,16 @@ class DataBase:
         return X, Y
 
     def non_linear_data(self, sampleA = 1.0, sampleB = 1.0, subsamples = False):
+        """
+        :param sampleA: percentage of data from class A that is going to be used. 100% = 100 samples.
+        :param sampleB: percentage of data from class B that is going to be used. 100% = 100 samples.
+        :param subsamples: boolean variable that indicates to the function to make a
+        special sample to cover part 4 of question 3.1.3
+        :return: samples from class A and B
+
+        This program generates data according to the parameters indicated by 3.1.3.
+        Then It samples randomly the amount of data according to sampleA and sample B (fractions).
+        """
 
         ndata = 100
         mA = [1.0, 0.3]
@@ -50,14 +67,14 @@ class DataBase:
         targetB = np.ones(ndata)*-1
 
         #sample
-        if subsamples:
+        if subsamples: #special case
             pos_ind = np.where(classA[0, :] > 0)[0]
             neg_ind = np.where(classA[0, :] < 0)[0]
             indA_pos = np.random.choice(pos_ind, int(0.2 * len(pos_ind)), replace=False)
             indA_neg = np.random.choice(neg_ind, int(0.8 * len(neg_ind)), replace=False)
             indA = np.hstack((indA_pos, indA_neg))
             indB = range(len(targetB))
-        else:
+        else: #general case
             indA = np.random.choice(range(len(targetA)), int(sampleA * len(targetA)), replace=False)
             indB = np.random.choice(range(len(targetB)), int(sampleB * len(targetB)), replace=False)
 

@@ -21,7 +21,15 @@ X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot)
 # COMPARISON BETWEEN PERCEPTRON AND DELTA RULE USING BATCH =================================
 # ANN parameters
 def compare_perc_delta(X, Y):
-    #in here we use batch
+    """
+
+    :param X: Training inputs
+    :param Y: Training targets
+    :return: three plots: two showing the transition of the boundary for delta rule and perceptron
+    and a third one comparing the final boundaries for both learning methods.
+
+    The use of batch and sequential learning has to be changed manually
+    """
     verbose = True
     params = {
         "learning_rate": 0.001,
@@ -60,7 +68,17 @@ def compare_perc_delta(X, Y):
 # COMPARISON BETWEEN PERCEPTRON AND DELTA RULE RESPECT LEARNING RATE =================================
 # ANN parameters
 def compare_learning_rate(X, Y):
-    # here we use batch
+    """
+    This function studies the convergence while varying the learning rate
+    :param X: Training inputs
+    :param Y: Training targets
+    :return: plot of the evolution of the error along the iterations
+    for different values of the learning rate
+
+    For this function the update rule and the method (batch/sequential) has to be changed
+    manually in params "learn_method" and in the training function respectively
+
+    """
     verbose = True
 
     fig, ax = plt.subplots()
@@ -90,6 +108,16 @@ def compare_learning_rate(X, Y):
     plt.show()
 
 def compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=False):
+    """
+    This program generates the data through non_linear_data function
+    and finds the boundary using batch and delta rule
+
+    :param sampleA: percentage of data from class A that is going to be used. 100% = 100 samples.
+    :param sampleB: percentage of data from class B that is going to be used. 100% = 100 samples.
+    :param subsamples: boolean variable that indicates to the function to make a
+        special sample to cover part 4 of question 3.1.3
+    :return: plot of the decision boundary
+    """
     X, Y = data_base.non_linear_data(sampleA=sampleA, sampleB=sampleB, subsamples=subsamples)
     mask = np.where(Y == 1)[0]
     mask2 = np.where(Y == -1)[0]
