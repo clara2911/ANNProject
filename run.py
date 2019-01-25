@@ -93,7 +93,7 @@ def compare_perc_delta(X, Y):
                                title=None, # title for plot
                                data_coloring=None, # color data points as targets or predictions
                                origin_grid = False)
-    ann_P.test(test_X, test_Y)
+    #ann_P.test(test_X, test_Y)
 
     #delta rule
     params['learn_method'] = 'delta_rule'
@@ -115,8 +115,8 @@ def compare_perc_delta(X, Y):
                                title=None, # title for plot
                                data_coloring=None, # color data points as targets or predictions
                                origin_grid = False)
-    error_1 = ann_D.test(test_X, test_Y)
-    error_2 = ann_P.test(test_X, test_Y)
+    #error_1 = ann_D.test(test_X, test_Y)
+    #error_2 = ann_P.test(test_X, test_Y)
 
 
 
@@ -173,6 +173,7 @@ def compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=False):
         special sample to cover part 4 of question 3.1.3
     :return: plot of the decision boundary
     """
+    data_base = DataBase()
     X, Y = data_base.non_linear_data(sampleA=sampleA, sampleB=sampleB, subsamples=subsamples)
     mask = np.where(Y == 1)[0]
     mask2 = np.where(Y == -1)[0]
@@ -236,7 +237,7 @@ def bias_influence(X,Y):
             )
 
 #compare_learning_rate(X,Y)
-compare_perc_delta(X, Y)
+#compare_perc_delta(X, Y)
 #compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=True)
 if __name__ == "__main__":
     main()
