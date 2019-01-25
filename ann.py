@@ -173,7 +173,6 @@ class ANN:
             self.predictions[num_data] = self.activation_function()
             diff = self.predictions[num_data] - targets
             delta_w = self.learning_rate * np.multiply( X , diff)
-
         return delta_w
 
 
@@ -218,42 +217,7 @@ class ANN:
         miss = len(np.where(predictions != targets)[0])
         return float(miss/len(targets))
 
-    def plot_decision_boundary_sequence(self, scatter = True, data=None, targets=None):
-        """
-        Plot data as classified from the NN and the sequence
-        of decision boundaries of the weights
-        """
-        fig, ax = plt.subplots()
-        classA_ind = np.where(self.predictions > 0)[0]
-        classB_ind = np.where(self.predictions <= 0)[0]
-
-        classA_x1 = [data[:,0][i] for i in classA_ind]
-        classA_x2 = [data[:,1][i] for i in classA_ind]
-        classB_x1 = [data[:,0][i] for i in classB_ind]
-        classB_x2 = [data[:,1][i] for i in classB_ind]
-
-        # decision_boundary
-        x1 = data[:, 0]
-        for i in range(len(self.int_w)):
-            part1 = self.int_w[i][0] / self.int_w[i][1]
-            part2 = self.int_w[i][2] / self.int_w[i][1]
-            x2 = np.array([- part1 * x + part2 for x in x1])
-            ax.plot(x1, x2, 'b', alpha=float(i + 1) / (len(self.int_w) + 1))
-
-        part1 = self.w[0] / self.w[1]
-        part2 = self.w[2] / self.w[1]
-        x2 = np.array([- part1 * x + part2 for x in x1])
-        ax.plot(x1, x2, 'r')
-
-        if scatter:
-            ax.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7, s=7)
-            ax.scatter(classB_x1, classB_x2, color='purple', alpha=0.7, s=7)
-
-        plt.show()
-        plt.close()
-        return
-
-    def plot_decision_boundary(self, scatter = True, ann_list = None, data=None, targets=None):
+    def plot_decision_boundary(self, scatter = True, ann_list = None, data=None, plot_intermediate=False):
         """
         Plot data as classified from the NN and the decision boundary of the weights
         """
@@ -268,6 +232,12 @@ class ANN:
 
         # decision_boundary
         x1 = data[:, 0]
+        if plot_intermediate:
+            for i in range(len(self.int_w)):
+                part1 = self.int_w[i][0] / self.int_w[i][1]
+                part2 = self.int_w[i][2] / self.int_w[i][1]
+                x2 = np.array([- part1 * x + part2 for x in x1])
+                ax.plot(x1, x2, 'b', alpha=float(i + 1) / (len(self.int_w) + 1))
         part1 = self.w[0] / self.w[1]
         part2 = self.w[2] / self.w[1]
         x2 = np.array([- part1 * x + part2 for x in x1])
@@ -278,18 +248,17 @@ class ANN:
                 part1 = ann.w[0] / ann.w[1]
                 part2 = ann.w[2] / ann.w[1]
                 x2 = np.array([- part1 * x - part2 for x in x1])
-                ax.plot(x1, x2, '--', alpha=0.5, label=ann.learn_method)
+            ax.plot(x1, x2, '--', alpha=0.5, label=ann.learn_method)
 
         if scatter:
             ax.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7, s=7)
             ax.scatter(classB_x1, classB_x2, color='purple', alpha=0.7, s=7)
+        ax.set_xlim(np.min(x1) - 0.1, np.max(x1) + 0.1)
+        ax.set_ylim(np.min(self.train_data[:, 1]) - 0.1, np.max(self.train_data[:, 1]) + 0.1)
 
-        #ax.set_xlim(np.min(x1) - 0.1, np.max(x1) + 0.1)
-        #ax.set_ylim(np.min(self.train_data[:, 1]) - 0.1, np.max(self.train_data[:, 1]) + 0.1)
         ax.legend(frameon=False)
         ax.set_xlabel('$x_1$', fontsize=18)
         ax.set_ylabel('$x_2$', fontsize=18)
-        plt.savefig('3_1_2_1.eps')
         plt.show()
         plt.close()
         return
