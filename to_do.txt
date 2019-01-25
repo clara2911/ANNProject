@@ -1,0 +1,6 @@
+FIX LIST
+
+TODO LIST
+- MLP
+- ENCODER
+- Function Approx
