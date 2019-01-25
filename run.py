@@ -1,4 +1,14 @@
-# import local files
+#!/usr/bin/env python
+"""
+Main file for learning with a single layer perceptron
+It contains 3 tests:
+- the difference between perceptron learning rule and delta learning rule
+- the influence of the learning rate
+- the influence of the bias
+
+Authors: Clara Tump, Kostis SZ and Romina Azz
+"""
+
 from generate_data import DataBase
 from ann import ANN
 import matplotlib.pylab as plt
@@ -27,14 +37,17 @@ def main():
     X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
     test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data)
 
+    # choose one of the 3 experiments
     # compare_perc_delta(X, Y)
     #compare_learning_rate(X,Y)
     bias_influence(X,Y)
 
-# COMPARISON BETWEEN PERCEPTRON AND DELTA RULE USING BATCH =================================
-# ANN parameters
 def compare_perc_delta(X, Y):
-    #in here we use batch
+    '''
+    COMPARISON BETWEEN PERCEPTRON AND DELTA RULE USING BATCH
+    :param X: the input data (N (number of inputs) x M (number of features before bias)
+    :param Y: the output targets (1 x N)
+    '''
     verbose = True
     params = {
         "learning_rate": 0.001,
@@ -73,10 +86,12 @@ def compare_perc_delta(X, Y):
     error_1 = ann_D.test(test_X, test_Y)
     error_2 = ann_P.test(test_X, test_Y)
 
-# COMPARISON BETWEEN PERCEPTRON AND DELTA RULE RESPECT LEARNING RATE =================================
-# ANN parameters
 def compare_learning_rate(X, Y):
-    # here we use batch
+    '''
+    COMPARISON BETWEEN PERCEPTRON AND DELTA RULE RESPECT LEARNING RATE using batch learning
+    :param X: the input data (N (number of inputs) x M (number of features before bias)
+    :param Y: the output targets (1 x N)
+    '''
     verbose = True
 
     fig, ax = plt.subplots()
@@ -105,8 +120,13 @@ def compare_learning_rate(X, Y):
     ax.legend()
     plt.show()
 
-# illustrate the capabilities of the model without the addition of bias
 def bias_influence(X,Y):
+    '''
+    illustrate the capabilities of the model without the addition of bias
+    Using batch learning and the delta_rule
+    :param X: the input data (N (number of inputs) x M (number of features before bias)
+    :param Y: the output targets (1 x N)
+    '''
     verbose = False
     params = {
         "learning_rate": 0.1,
