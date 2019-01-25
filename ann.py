@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.lines import Line2D
 
 class ANN:
 
@@ -217,32 +218,46 @@ class ANN:
         miss = len(np.where(predictions != targets)[0])
         return float(miss/len(targets))
 
-    def plot_decision_boundary(self, scatter = True, ann_list = None, data=None, plot_intermediate=False):
+    def plot_decision_boundary(self,
+                               scatter = True, # scatter data points: True/False
+                               ann_list = None, # list of different models to compare
+                               data=None,
+                               plot_intermediate=False, # plot boundary after every epoch True/False
+                               title=None, # title for plot
+                               data_coloring=None, # color data points as targets or predictions
+                               origin_grid = False): # plot x=0 and y=0 grid
         """
         Plot data as classified from the NN and the decision boundary of the weights
         """
+        
         fig, ax = plt.subplots()
-        classA_ind = np.where(self.predictions > 0)[0]
-        classB_ind = np.where(self.predictions <= 0)[0]
-
+        if data_coloring is not None:
+            classA_ind = np.where(data_coloring > 0)[0]
+            classB_ind = np.where(data_coloring <= 0)[0]
+        else:
+            classA_ind = np.where(self.predictions > 0)[0]
+            classB_ind = np.where(self.predictions <= 0)[0]
         classA_x1 = [data[:,0][i] for i in classA_ind]
         classA_x2 = [data[:,1][i] for i in classA_ind]
         classB_x1 = [data[:,0][i] for i in classB_ind]
         classB_x2 = [data[:,1][i] for i in classB_ind]
 
-        # decision_boundary
+
         x1 = data[:, 0]
+        # plot the decision boundary after each iteration
         if plot_intermediate:
             for i in range(len(self.int_w)):
                 part1 = self.int_w[i][0] / self.int_w[i][1]
                 part2 = self.int_w[i][2] / self.int_w[i][1]
                 x2 = np.array([- part1 * x + part2 for x in x1])
-                ax.plot(x1, x2, 'b', alpha=float(i + 1) / (len(self.int_w) + 1))
+                ax.plot(x1, x2, 'b', alpha=0.2*float(i + 1) /(len(self.int_w) + 1))
+        #plot final decision boundary
         part1 = self.w[0] / self.w[1]
         part2 = self.w[2] / self.w[1]
         x2 = np.array([- part1 * x + part2 for x in x1])
-        ax.plot(x1, x2, '--', alpha=0.5, label = self.learn_method)
+        # ax.plot(x1, x2, alpha=0.5, color='red', label='final decision boundary')
 
+        # if you want to plot multiple ann's and compare them
         if ann_list:
             for ann in ann_list:
                 part1 = ann.w[0] / ann.w[1]
@@ -250,13 +265,23 @@ class ANN:
                 x2 = np.array([- part1 * x - part2 for x in x1])
             ax.plot(x1, x2, '--', alpha=0.5, label=ann.learn_method)
 
+        # plot data points
         if scatter:
             ax.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7, s=7)
             ax.scatter(classB_x1, classB_x2, color='purple', alpha=0.7, s=7)
         ax.set_xlim(np.min(x1) - 0.1, np.max(x1) + 0.1)
         ax.set_ylim(np.min(self.train_data[:, 1]) - 0.1, np.max(self.train_data[:, 1]) + 0.1)
 
-        ax.legend(frameon=False)
+        #plot origin grid
+        if origin_grid:
+            ax.axhline(y=0, color='k')
+            ax.axvline(x=0, color='k')
+
+        if title:
+            ax.set_title(title)
+        custom_lines = [Line2D([0], [0], color='b'), Line2D([0], [0], color='r')]
+        ax.legend(custom_lines, ['Intermediate boundaries', 'Final boundary'], frameon=False, loc='bottom right')
+        # ax.legend(frameon=False)
         ax.set_xlabel('$x_1$', fontsize=18)
         ax.set_ylabel('$x_2$', fontsize=18)
         plt.show()

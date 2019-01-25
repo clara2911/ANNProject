@@ -6,14 +6,18 @@ import numpy as np
 
 
 # Data variables
-N = 20
+N = 200
 n = int(N/2)  # 2 because we have n*2 data
 features = 2  # input vectors / patterns
 
-mA = np.array([ 1.0, 0.5])
-sigmaA = 0.2
-mB = np.array([-1.0, 0.0])
-sigmaB = 0.2
+# mA = np.array([ 1.0, 0.5])
+# sigmaA = 0.2
+# mB = np.array([-1.0, 0.0])
+# sigmaB = 0.2
+mA = np.array([0, 0])
+sigmaA = 0.4
+mB = np.array([1.5,1])
+sigmaB = 0.4
 plot_data = False
 
 test_n = 50
@@ -107,9 +111,10 @@ def bias_influence(X,Y):
     # here we use batch
     verbose = True
 
+
     fig, ax = plt.subplots()
     params = {
-        "learning_rate": 0.2,
+        "learning_rate": 0.1,
         "batch_size": 1,
         "theta": 0,
         "epsilon": 0.0,  # slack for error during training
@@ -120,12 +125,19 @@ def bias_influence(X,Y):
         "m_weights": 0,
         "sigma_weights": 0.5,
         "nodes": 1,
-        "learn_method": 'perceptron'  # 'delta_rule'
+        "learn_method": 'delta_rule',  # 'delta_rule'
+        "bias": 0
     }
     ann = ANN(X, Y, **params)
     ann.train_batch(verbose=verbose)
     # ax.plot(range(len(ann.error_history)), ann.error_history)
-    ann.plot_decision_boundary(data=ann.train_data, plot_intermediate=True)
+    ann.plot_decision_boundary(
+            data=ann.train_data,
+            plot_intermediate=True,
+            title='Learning without bias',
+            data_coloring = ann.train_targets,
+            origin_grid=True
+            )
 
 
 # compare_perc_delta(X, Y)
