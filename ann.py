@@ -1,3 +1,9 @@
+"""
+This file contains the ANN class, which includes all the machine learning of a selected ANN
+
+Authors: Clara Tump, Kostis SZ and Romina Azz
+"""
+
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
