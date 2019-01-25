@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.lines import Line2D
 
 class ANN:
 
@@ -44,11 +45,13 @@ class ANN:
         """
         w = np.random.normal(self.m_weights, self.sigma_weights, self.n_features + 1)  # + 1 is bias
 
-        for j in range(self.nodes - 1):
-            w_j = np.random.normal(self.m_weights, self.sigma_weights, self.n_features + 1)  # + 1 is bias
-            w = np.vstack((w, w_j))
-        w = w.reshape(-1,1)
-        return w
+        if (self.nodes == 1):
+            return w.reshape(-1,1)
+        else:
+            for j in range(self.nodes - 1):
+                w_j = np.random.normal(self.m_weights, self.sigma_weights, self.n_features + 1)  # + 1 is bias
+                w = np.vstack((w, w_j))
+        return w.T
 
     def shape_input(self, X, Y):
         """
@@ -57,8 +60,8 @@ class ANN:
         index_shuffle = np.random.permutation(X.shape[0])
         X = X[index_shuffle]
         Y = Y[index_shuffle]
-        bias = - np.ones((X.shape[0], 1))  # put a minus in front
-        X = np.hstack((X, bias))  # changed so bias is after (before it was beginning)
+        bias_vec = self.bias * np.ones((X.shape[0], 1))  # add bias
+        X = np.hstack((X, bias_vec))  #  bias is the last element of each input
         return X, Y
 
     def train_batch(self, verbose=False):
@@ -70,6 +73,8 @@ class ANN:
         self.int_w = {}
         self.error_history = []
         while iteration < self.epochs:
+            print("W: ")
+            print(self.w)
             #take a random batch or sequential batch?
             data = self.train_data
             targets = self.train_targets
@@ -144,11 +149,13 @@ class ANN:
         """
         test_data, test_targets = self.shape_input(test_data, test_targets)
         test_predictions = np.dot(test_data, self.w)
-        targets_pred = self.activation_function(test_predictions)
+        self.sum = test_predictions
+        targets_pred = self.activation_function()
 
         error = self.missclass_error(targets_pred, test_targets)
 
         print('Test Error: ', error)
+        return error
 
 
     def learn(self, data, targets, num_data=None):
@@ -171,7 +178,6 @@ class ANN:
             self.predictions[num_data] = self.activation_function()
             diff = self.predictions[num_data] - targets
             delta_w = self.learning_rate * np.multiply( X , diff)
-
         return delta_w
 
 
@@ -191,7 +197,6 @@ class ANN:
             self.predictions[num_data] = self.activation_function()
             diff = self.sum - targets
             delta_w = self.learning_rate * np.multiply(X, diff)
-
         return delta_w
 
 
@@ -216,44 +221,77 @@ class ANN:
         miss = len(np.where(predictions != targets)[0])
         return float(miss/len(targets))
 
-    def plot_decision_boundary_sequence(self, scatter = True, data=None, targets=None, string=None):
+    def plot_decision_boundary(self,
+                               scatter = True, # scatter data points: True/False
+                               ann_list = None, # list of different models to compare
+                               data=None,
+                               plot_intermediate=False, # plot boundary after every epoch True/False
+                               title=None, # title for plot
+                               data_coloring=None, # color data points as targets or predictions
+                               origin_grid = False): # plot x=0 and y=0 grid
         """
-        Plot data as classified from the NN and the sequence
-        of decision boundaries of the weights
+        Plot data as classified from the NN and the decision boundary of the weights
         """
-        fig, ax = plt.subplots()
-        classA_ind = np.where(self.predictions > 0)[0]
-        classB_ind = np.where(self.predictions <= 0)[0]
 
+        fig, ax = plt.subplots()
+        if data_coloring is not None:
+            classA_ind = np.where(data_coloring > 0)[0]
+            classB_ind = np.where(data_coloring <= 0)[0]
+        else:
+            classA_ind = np.where(self.predictions > 0)[0]
+            classB_ind = np.where(self.predictions <= 0)[0]
         classA_x1 = [data[:,0][i] for i in classA_ind]
         classA_x2 = [data[:,1][i] for i in classA_ind]
         classB_x1 = [data[:,0][i] for i in classB_ind]
         classB_x2 = [data[:,1][i] for i in classB_ind]
 
-        # decision_boundary
-        x1 = data[:, 0]
-        for i in range(len(self.int_w)):
-            part1 = self.int_w[i][0] / self.int_w[i][1]
-            part2 = self.int_w[i][2] / self.int_w[i][1]
-            x2 = np.array([- part1 * x + part2 for x in x1])
-            ax.plot(x1, x2, 'b', alpha=float(i + 1) / (len(self.int_w) + 1))
 
+        x1 = data[:, 0]
+        # plot the decision boundary after each iteration
+        if plot_intermediate:
+            for i in range(len(self.int_w)):
+                part1 = self.int_w[i][0] / self.int_w[i][1]
+                part2 = self.int_w[i][2] / self.int_w[i][1]
+                x2 = np.array([- part1 * x - self.bias*part2 for x in x1])
+                ax.plot(x1, x2, 'b', alpha=0.2*float(i + 1) /(len(self.int_w) + 1))
+        #plot final decision boundary
         part1 = self.w[0] / self.w[1]
         part2 = self.w[2] / self.w[1]
-        x2 = np.array([- part1 * x + part2 for x in x1])
-        ax.plot(x1, x2, 'r')
+        x2 = np.array([- part1 * x - self.bias*part2 for x in x1])
+        ax.plot(x1, x2, alpha=0.5, color='red', linewidth=3, label='final decision boundary')
 
+        # if you want to plot multiple ann's and compare them
+        if ann_list:
+            for ann in ann_list:
+                part1 = ann.w[0] / ann.w[1]
+                part2 = ann.w[2] / ann.w[1]
+                x2 = np.array([- part1 * x - self.bias*part2 for x in x1])
+                ax.plot(x1, x2, '--', alpha=0.5, label=ann.learn_method)
+
+        # plot data points
         if scatter:
             ax.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7, s=7)
             ax.scatter(classB_x1, classB_x2, color='purple', alpha=0.7, s=7)
-        ax.set_xlim(np.min(data[:, 0]) - 0.1, np.max(data[:, 0]) + 0.1)
-        ax.set_ylim(np.min(data[:, 1]) - 0.1, np.max(data[:, 1]) + 0.1)
-        ax.set_title(string)
+        ax.set_xlim(np.min(x1) - 0.1, np.max(x1) + 0.1)
+        ax.set_ylim(np.min(self.train_data[:, 1]) - 0.1, np.max(self.train_data[:, 1]) + 0.1)
+
+        #plot origin grid
+        if origin_grid:
+            ax.axhline(y=0, color='k')
+            ax.axvline(x=0, color='k')
+
+        if title:
+            ax.set_title(title)
+        custom_lines = [Line2D([0], [0], color='b'), Line2D([0], [0], color='r')]
+        ax.legend(custom_lines, ['Intermediate boundaries', 'Final boundary'], frameon=False, loc='lower right')
+        # ax.legend(frameon=False)
+        ax.set_xlabel('$x_1$', fontsize=18)
+        ax.set_ylabel('$x_2$', fontsize=18)
         plt.show()
         plt.close()
         return
 
-    def plot_decision_boundary(self, scatter = True, ann_list = None, data=None, targets=None, title=None):
+    def plot_decision_boundary_general(self, scatter = True, ann_list = None, data=None, targets=None, title=None):
         """
         Plot data as classified from the NN and the decision boundary of the weights
         """

@@ -13,10 +13,17 @@ mA = np.array([ 1.0, 0.5])
 sigmaA = 0.2
 mB = np.array([-1.0, 0.0])
 sigmaB = 0.2
-plot = False
+plot_data = False
+
+test_n = 50
+test_mA = np.array([ 1.0, 0.5])
+test_sigmaA = 0.2
+test_mB = np.array([-1.0, 0.0])
+test_sigmaB = 0.2
 
 data_base = DataBase()
-X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot)
+X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
+test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data)
 
 # COMPARISON BETWEEN PERCEPTRON AND DELTA RULE USING BATCH =================================
 # ANN parameters
@@ -41,7 +48,7 @@ def compare_perc_delta(X, Y):
         "test_data": None,
         "test_targets": None,
         "m_weights": 0.1,
-        "sigma_weights": 0.5,
+        "sigma_weights": 0.2,
         "nodes": 1,
         "learn_method": 'perceptron'
     }
@@ -51,18 +58,40 @@ def compare_perc_delta(X, Y):
 
     #perceptron
     ann_P = ANN(X, Y, **params)
-    #ann_P.train_batch(verbose=verbose)
-    ann_P.train_sequential(verbose=verbose)
-    ann_P.plot_decision_boundary_sequence(scatter = True, data=ann_P.train_data, targets=ann_P.train_targets)
+    ann_P.train_batch(verbose=verbose)
+    #ann_P.train_sequential(verbose=verbose)
+    ann_P.plot_decision_boundary(scatter = True, # scatter data points: True/False
+                               ann_list = None, # list of different models to compare
+                               data=ann_P.train_data,
+                               plot_intermediate=True, # plot boundary after every epoch True/False
+                               title=None, # title for plot
+                               data_coloring=None, # color data points as targets or predictions
+                               origin_grid = False)
+    ann_P.test(test_X, test_Y)
 
     #delta rule
     params['learn_method'] = 'delta_rule'
     ann_D = ANN(X, Y, **params)
-    #ann_D.train_batch(verbose=verbose)
-    ann_D.train_sequential(verbose=verbose)
-    ann_D.plot_decision_boundary_sequence(scatter = True, data=ann_D.train_data, targets=ann_D.train_targets)
+    ann_D.train_batch(verbose=verbose)
+    # ann_D.train_sequential(verbose=verbose)
+    ann_D.plot_decision_boundary(scatter = True, # scatter data points: True/False
+                               ann_list = None, # list of different models to compare
+                               data=ann_D.train_data,
+                               plot_intermediate=True, # plot boundary after every epoch True/False
+                               title=None, # title for plot
+                               data_coloring=None, # color data points as targets or predictions
+                               origin_grid = False)
 
-    ann_P.plot_decision_boundary(ann_list=[ann_D], data=ann_P.train_data, targets=ann_P.train_targets)
+    ann_P.plot_decision_boundary(scatter = True, # scatter data points: True/False
+                               ann_list = [ann_D], # list of different models to compare
+                               data=ann_P.train_data,
+                               plot_intermediate=False, # plot boundary after every epoch True/False
+                               title=None, # title for plot
+                               data_coloring=None, # color data points as targets or predictions
+                               origin_grid = False)
+    error_1 = ann_D.test(test_X, test_Y)
+    error_2 = ann_P.test(test_X, test_Y)
+
 
 
 # COMPARISON BETWEEN PERCEPTRON AND DELTA RULE RESPECT LEARNING RATE =================================
@@ -137,15 +166,52 @@ def compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=False):
         "learn_method": 'delta_rule'
     }
 
+
     ann = ANN(X, Y, **params)
     ann.train_batch(verbose=True)
     if subsamples:
         title = '20% from classA(1,:)<0 and 80% from classA(1,:)>0'
     else:
         title = '{}% from class A and {}% from class B'.format(sampleA*100, sampleB*100)
-    ann.plot_decision_boundary(scatter = True, data=ann.train_data, targets=ann.train_targets, title=title)
+    ann.plot_decision_boundary_general(scatter = True, data=ann.train_data, targets=ann.train_targets, title=title)
 
+
+def bias_influence(X,Y):
+    # here we use batch
+    verbose = True
+
+
+    fig, ax = plt.subplots()
+    params = {
+        "learning_rate": 0.1,
+        "batch_size": 1,
+        "theta": 0,
+        "epsilon": 0.0,  # slack for error during training
+        "epochs": 50,
+        "act_fun": 'step',
+        "test_data": None,
+        "test_targets": None,
+        "m_weights": 0,
+        "sigma_weights": 0.5,
+        "nodes": 1,
+        "learn_method": 'perceptron',  # 'delta_rule' or 'perceptron'
+        "bias": 0
+    }
+    ann = ANN(X, Y, **params)
+    ann.train_batch(verbose=verbose)
+    # ax.plot(range(len(ann.error_history)), ann.error_history)
+    ann.plot_decision_boundary(
+            data=ann.train_data,
+            plot_intermediate=True,
+            title='Learning without bias',
+            data_coloring = ann.train_targets,
+            origin_grid=True
+            )
 
 #compare_learning_rate(X,Y)
-#compare_perc_delta(X, Y)
-compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=True)
+compare_perc_delta(X, Y)
+#compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=True)
+
+# compare_perc_delta(X, Y)
+#compare_learning_rate(X,Y)
+#bias_influence(X,Y)
