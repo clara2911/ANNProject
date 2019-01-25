@@ -63,7 +63,7 @@ def compare_perc_delta(X, Y):
     # ann_D.train_sequential(verbose=verbose)
     ann_D.plot_decision_boundary_sequence(scatter = True, data=ann_D.train_data, targets=ann_D.train_targets)
 
-    ann_P.plot_decision_boundary(ann_list=[ann_D], data=ann_P.train_data, targets=ann_P.train_targets)
+    ann_P.plot_decision_boundary(ann_list=[ann_D], data=ann_P.train_data)
 
     error_1 = ann_D.test(test_X, test_Y)
     error_2 = ann_P.test(test_X, test_Y)
@@ -102,5 +102,32 @@ def compare_learning_rate(X, Y):
     ax.legend()
     plt.show()
 
-compare_perc_delta(X, Y)
+
+def bias_influence(X,Y):
+    # here we use batch
+    verbose = True
+
+    fig, ax = plt.subplots()
+    params = {
+        "learning_rate": 0.2,
+        "batch_size": 1,
+        "theta": 0,
+        "epsilon": 0.0,  # slack for error during training
+        "epochs": 100,
+        "act_fun": 'step',
+        "test_data": None,
+        "test_targets": None,
+        "m_weights": 0,
+        "sigma_weights": 0.5,
+        "nodes": 1,
+        "learn_method": 'perceptron'  # 'delta_rule'
+    }
+    ann = ANN(X, Y, **params)
+    ann.train_batch(verbose=verbose)
+    # ax.plot(range(len(ann.error_history)), ann.error_history)
+    ann.plot_decision_boundary(data=ann.train_data, plot_intermediate=True)
+
+
+# compare_perc_delta(X, Y)
 #compare_learning_rate(X,Y)
+bias_influence(X,Y)
