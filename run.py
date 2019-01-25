@@ -120,7 +120,7 @@ def bias_influence(X,Y):
         "m_weights": 0,
         "sigma_weights": 0.5,
         "nodes": 1,
-        "learn_method": 'perceptron',
+        "learn_method": 'delta_rule',
         "bias": 0
     }
     ann = ANN(X, Y, **params)
