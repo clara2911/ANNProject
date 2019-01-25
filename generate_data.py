@@ -22,7 +22,7 @@ class DataBase:
             classA[:,feature] = np.random.normal(mA[feature], sigmaA, n)
             classB[:,feature] = np.random.normal(mB[feature], sigmaB, n)
 
-        if (plot):
+        if plot:
             self.plot_data(classA, classB)
 
         X = np.vstack((classA, classB))

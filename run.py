@@ -10,15 +10,10 @@ N = 200
 n = int(N/2)  # 2 because we have n*2 data
 features = 2  # input vectors / patterns
 
-# mA = np.array([ 1.0, 0.5])
-# sigmaA = 0.2
-# mB = np.array([-1.0, 0.0])
-# sigmaB = 0.2
-mA = np.array([0, 0])
-sigmaA = 0.4
-mB = np.array([1.5,1])
-sigmaB = 0.4
-plot_data = False
+mA = np.array([ 1.0, 0.5])
+sigmaA = 0.2
+mB = np.array([-1.0, 0.0])
+sigmaB = 0.2
 
 test_n = 50
 test_mA = np.array([ 1.0, 0.5])
@@ -118,14 +113,14 @@ def bias_influence(X,Y):
         "batch_size": 1,
         "theta": 0,
         "epsilon": 0.0,  # slack for error during training
-        "epochs": 100,
+        "epochs": 50,
         "act_fun": 'step',
         "test_data": None,
         "test_targets": None,
         "m_weights": 0,
         "sigma_weights": 0.5,
         "nodes": 1,
-        "learn_method": 'delta_rule',  # 'delta_rule'
+        "learn_method": 'perceptron',  # 'delta_rule' or 'perceptron'
         "bias": 0
     }
     ann = ANN(X, Y, **params)

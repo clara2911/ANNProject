@@ -60,8 +60,8 @@ class ANN:
         index_shuffle = np.random.permutation(X.shape[0])
         X = X[index_shuffle]
         Y = Y[index_shuffle]
-        bias_vec = self.bias * np.ones((X.shape[0], 1))  # put a minus in front
-        X = np.hstack((X, bias_vec))  #  changed so bias is after (before it was beginning)
+        bias_vec = self.bias * np.ones((X.shape[0], 1))  # add bias
+        X = np.hstack((X, bias_vec))  #  bias is the last element of each input
         return X, Y
 
     def train_batch(self, verbose=False):
@@ -72,6 +72,8 @@ class ANN:
         self.int_w = {}
         self.error_history = []
         while iteration < self.epochs:
+            print("W: ")
+            print(self.w)
             #take a random batch or sequential batch?
             data = self.train_data
             targets = self.train_targets
@@ -193,7 +195,6 @@ class ANN:
             self.predictions[num_data] = self.activation_function()
             diff = self.sum - targets
             delta_w = self.learning_rate * np.multiply(X, diff)
-
         return delta_w
 
 
@@ -229,7 +230,7 @@ class ANN:
         """
         Plot data as classified from the NN and the decision boundary of the weights
         """
-        
+
         fig, ax = plt.subplots()
         if data_coloring is not None:
             classA_ind = np.where(data_coloring > 0)[0]
@@ -249,20 +250,20 @@ class ANN:
             for i in range(len(self.int_w)):
                 part1 = self.int_w[i][0] / self.int_w[i][1]
                 part2 = self.int_w[i][2] / self.int_w[i][1]
-                x2 = np.array([- part1 * x + part2 for x in x1])
+                x2 = np.array([- part1 * x - self.bias*part2 for x in x1])
                 ax.plot(x1, x2, 'b', alpha=0.2*float(i + 1) /(len(self.int_w) + 1))
         #plot final decision boundary
         part1 = self.w[0] / self.w[1]
         part2 = self.w[2] / self.w[1]
-        x2 = np.array([- part1 * x + part2 for x in x1])
-        # ax.plot(x1, x2, alpha=0.5, color='red', label='final decision boundary')
+        x2 = np.array([- part1 * x - self.bias*part2 for x in x1])
+        ax.plot(x1, x2, alpha=0.5, color='red', linewidth=3, label='final decision boundary')
 
         # if you want to plot multiple ann's and compare them
         if ann_list:
             for ann in ann_list:
                 part1 = ann.w[0] / ann.w[1]
                 part2 = ann.w[2] / ann.w[1]
-                x2 = np.array([- part1 * x - part2 for x in x1])
+                x2 = np.array([- part1 * x - self.bias*part2 for x in x1])
             ax.plot(x1, x2, '--', alpha=0.5, label=ann.learn_method)
 
         # plot data points
@@ -280,7 +281,7 @@ class ANN:
         if title:
             ax.set_title(title)
         custom_lines = [Line2D([0], [0], color='b'), Line2D([0], [0], color='r')]
-        ax.legend(custom_lines, ['Intermediate boundaries', 'Final boundary'], frameon=False, loc='bottom right')
+        ax.legend(custom_lines, ['Intermediate boundaries', 'Final boundary'], frameon=False, loc='lower right')
         # ax.legend(frameon=False)
         ax.set_xlabel('$x_1$', fontsize=18)
         ax.set_ylabel('$x_2$', fontsize=18)
