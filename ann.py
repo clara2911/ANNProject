@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
+from sklearn.metrics import mean_squared_error
 
 class ANN:
 
@@ -72,14 +73,11 @@ class ANN:
         self.int_w = {}
         self.error_history = []
         while iteration < self.epochs:
-            print("W: ")
-            print(self.w)
             #take a random batch or sequential batch?
             data = self.train_data
             targets = self.train_targets
-
             #predict (compute product of X * w)
-            self.sum = np.dot(data, self.w)  # Y_pred: NxNeurons  "the output will be an NxNeurons matrix of sum for each neuron for each input vector"
+            self.sum = np.dot(data, self.w)
 
             # compute delta_w
             delta_w = self.learn(data, targets)
@@ -218,6 +216,12 @@ class ANN:
         """
         miss = len(np.where(predictions != targets)[0])
         return float(miss/len(targets))
+
+    def mse(self, predictions, targets):
+        print("shape predictions: ", predictions.shape)
+        print('shape targets:  ', targets.shape)
+        mse = mean_squared_error(predictions, targets)
+        return mse
 
     def plot_decision_boundary(self,
                                scatter = True, # scatter data points: True/False
