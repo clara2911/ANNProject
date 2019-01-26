@@ -327,7 +327,7 @@ class ANN:
         ax.set_ylabel('$x_2$', fontsize=18)
         ax.set_title(title)
         words_title = title.split(' ')
-        plt.savefig('3_1_3_{}_{}.eps'.format(words_title[0], words_title[5]))
+        plt.savefig('figures/3_1_3_{}_{}.eps'.format(words_title[0], words_title[5]))
         plt.show()
         plt.close()
         return

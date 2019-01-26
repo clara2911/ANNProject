@@ -39,16 +39,18 @@ def main():
     test_sigmaB = 0.2
     plot_data = False
 
+    add_bias = True  # add bias to the inputs
+
     data_base = DataBase()
-    X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
-    test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data)
+    X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
+    test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data, add_bias=add_bias)
 
     # choose one of the 3 experiments
-    # compare_perc_delta(X, Y)
+    compare_perc_delta(X, Y, test_X, test_Y)
     #compare_learning_rate(X,Y)
-    bias_influence(X,Y)
+    #bias_influence(X,Y)
 
-def compare_perc_delta(X, Y):
+def compare_perc_delta(X, Y, test_X, test_Y):
     '''
     COMPARISON BETWEEN PERCEPTRON AND DELTA RULE USING BATCH
     :param X: the input data (N (number of inputs) x M (number of features before bias)
@@ -227,17 +229,18 @@ def bias_influence(X,Y):
     }
     ann = ANN(X, Y, **params)
     ann.train_batch(verbose=verbose)
+    if (params["bias"] == 0):
+        title = 'Learning without bias'
+    else:
+        title = 'Learning with bias'
     ann.plot_decision_boundary(
             data=ann.train_data,
             plot_intermediate=True,
-            title='Learning without bias',
+            title=title,
             data_coloring = ann.train_targets,
             origin_grid=True
             )
 
-#compare_learning_rate(X,Y)
-compare_perc_delta(X, Y)
-#compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=True)
 if __name__ == "__main__":
     main()
 
