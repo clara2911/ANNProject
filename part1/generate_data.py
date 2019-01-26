@@ -92,7 +92,7 @@ class DataBase:
         classA = np.empty((2, ndata))
         classB = np.empty((2, ndata))
         classA[1, :] = np.random.randn(ndata) * sigmaA + mA[1]
-        classA[0, :] = np.hstack((np.random.randn(ndata/2) * sigmaA - mA[0], np.random.randn(ndata/2) * sigmaA + mA[0]))
+        classA[0, :] = np.hstack((np.random.randn(int(ndata/2)) * sigmaA - mA[0], np.random.randn(int(ndata/2)) * sigmaA + mA[0]))
         classB[0, :] = np.random.randn(ndata) * sigmaB + mB[0]
         classB[1, :] = np.random.randn(ndata) * sigmaB + mB[1]
 
