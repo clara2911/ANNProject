@@ -6,7 +6,7 @@ import numpy as np
 
 
 # Data variables
-N = 4
+N = 100
 n = int(N/2)  # 2 because we have n*2 data
 features = 2  # input vectors / patterns
 
@@ -29,18 +29,18 @@ test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_si
 #in here we use batch
 verbose = True
 params = {
-    "learning_rate": 0.001,
+    "learning_rate": 0.01,
     "batch_size": 6,
     "theta": 0,
     "epsilon": 0.0,  # slack for error during training
-    "epochs": 1000,
+    "epochs": 100,
     "act_fun": 'step',
     "test_data": None,
     "test_targets": None,
     "m_weights": 0.1,
-    "sigma_weights": 0.2,
+    "sigma_weights": 0.1,
     "nodes": 10,
-    "learn_method": 'perceptron'
+    "learn_method": 'delta_rule'
 }
 
 # train ANN
@@ -51,8 +51,9 @@ mlp_P = MLP(X, Y, **params)
 mlp_P.train_batch(verbose=verbose)
 #mlp_P.train_sequential(verbose=verbose)
 # mlp_P.plot_decision_boundary_sequence(scatter = True, data=mlp_P.train_data, targets=mlp_P.train_targets)
-mlp_P.test(test_X, test_Y)
+#mlp_P.test(test_X, test_Y)
 
+exit()
 #delta rule
 params['learn_method'] = 'delta_rule'
 mlp_D = MLP(X, Y, **params)
@@ -62,5 +63,5 @@ mlp_D.train_batch(verbose=verbose)
 
 #mlp_P.plot_decision_boundary(ann_list=[mlp_D], data=mlp_P.train_data, targets=mlp_P.train_targets)
 
-error_1 = mlp_D.test(test_X, test_Y)
-error_2 = mlp_P.test(test_X, test_Y)
+#error_1 = mlp_D.test(test_X, test_Y)
+#error_2 = mlp_P.test(test_X, test_Y)

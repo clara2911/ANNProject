@@ -85,7 +85,9 @@ class MLP:
             data = self.train_data  # Data dimensions: Features + 1 x N_batch_size
             targets = self.train_targets  # N_batch_size
 
-            # FORWARD PASS STARTS HERE
+            final_out = np.zeros(self.train_data.shape[0])
+
+            # FORWARD PASS!!!
             for feature in range(self.train_data.shape[1]):  # for every input vector / feature
                 # for every input vector / feature
                 data = self.train_data[:,feature]
@@ -128,7 +130,7 @@ class MLP:
 
                 outputs = alpha_kapa
 
-                # BACKPROP STARTS HERE
+                # BACKWARD PASS !!!
 
                 # compute Output ERROR
                 delta_out_k = (outputs - targets) * outputs * (1.0 - outputs)  # delta_out: N_batch_size x 1
@@ -143,8 +145,6 @@ class MLP:
 
                     w_zeta = self.weights[layer]  # 1 x M_zeta
 
-                    # is it np.dot(delta_out) or np.dot(previous_delta) ? in the book its delta_out but this is for 2 layers!
-                    # ^ it IS delta_out! checked here https://ecee.colorado.edu/~ecen4831/lectures/NNet3.html
                     part2_matrix = np.dot(delta_out_k, w_zeta)  # (1 x N_batch_size) * (1 x M_zeta) = N_batch_size x M_zeta
 
                     part2 = np.sum(part2_matrix, axis=0)  # M_zeta x 1
@@ -156,14 +156,16 @@ class MLP:
                     delta_h[layer] = delta_h_zeta
 
 
+                # UPDATING !!!
                 # update output layer
                 input_of_output_layer = self.alpha_layer_out[-1]  # output of layer before output = input of output layer
 
-                for node in range(len(self.weights[-1])):
+                for node in range(self.weights[-1].shape[1]):
                     update_out_w = 0
                     for input in input_of_output_layer:
                         update_out_w += self.learning_rate * input * delta_out_k[node]
-                    self.weights[-1][node] = self.weights[-1][node] - update_out_w
+
+                    self.weights[-1][0][node] = self.weights[-1][0][node] - update_out_w
 
                 # TODO: WATCHOUT: Check if this is correct
                 # update_out_w = self.learning_rate * np.dot(input_of_output_layer, delta_out_k)  # (1 x M_prev_layer) * (1 x M_k) = 1 x M_k (output nodes)
@@ -175,11 +177,12 @@ class MLP:
                 for layer in range(self.num_of_hidden_layers-1, 0, -1):  # layer index depicted as zeta
                     input_of_layer = self.alpha_layer_out[layer - 1]  # output of previous layer is input of current layer
 
-                    for node in range(len(self.weights[layer])):
+                    for node in range(self.weights[layer].shape[1]):
                         update_w_k = 0
                         for input in input_of_layer:
                             update_w_k += self.learning_rate * input * delta_h[layer][node]
-                        self.weights[layer][node] = self.weights[layer][node] - update_w_k
+
+                        self.weights[layer][0][node] = self.weights[layer][0][node] - update_w_k
 
                     # update_h_w = self.learning_rate * np.dot(input_of_layer, delta_h[hidden_layer])
                     # self.weights[hidden_layer] = self.weights[hidden_layer] - update_h_w  # Is it - or +? page 78: - , page 79: +
@@ -187,13 +190,19 @@ class MLP:
                 # update first layer
                 # update_in_w = self.learning_rate * np.dot(data, delta_h[0])
                 # self.weights[0] = self.weights[0] - update_in_w
-                for node in range(len(self.weights[0])):
+                for node in range(self.weights[0].shape[1]):
                     update_w_k = 0
                     for input in data:
                         update_w_k += self.learning_rate * input * delta_h[0][node]
-                    self.weights[0][node] = self.weights[0][node] - update_w_k
+                    self.weights[0][0][node] = self.weights[0][0][node] - update_w_k
 
 
+        self.sum = outputs
+        self.theta = 0.5
+        outputs = self.step()
+        print(outputs)
+        print(targets)
+        print('Training Error:',self.missclass_error(outputs, targets))
 
     def test(self, test_data, test_targets):
         """
