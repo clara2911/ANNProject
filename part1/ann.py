@@ -60,7 +60,16 @@ class ANN:
                 w = np.vstack((w, w_j))
         return w.T
 
-    def train_batch(self, verbose=False):
+    def train(self, method, verbose=False):
+        """
+        Main train function
+        """
+        if (method == 'batch'):
+            return self.train_batch(verbose)
+        else:
+            return self.train_sequential(verbose)
+
+    def train_batch(self, verbose):
         """
         Train neural network
         We see all the data and sum all the deltas in order to make a unique update per epoch.
@@ -94,7 +103,7 @@ class ANN:
                 self.print_info(iteration, self.error)
             iteration += 1
 
-    def train_sequential(self, verbose=False):
+    def train_sequential(self, verbose):
         """
         Train neural network using sequential method.
         In each epoch we update the weights each time we see a sample.
