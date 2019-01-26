@@ -28,7 +28,7 @@ class ANN:
             setattr(self, var, kwargs.get(var, default))
 
         n_features = data.shape[1]
-        self.train_data, self.train_targets = self.shape_input(data, targets, n_features)
+        self.train_data, self.train_targets = data, targets
         self.w = self.init_weights(n_features)
 
 
@@ -36,24 +36,14 @@ class ANN:
         """
         Initialize weight matrix Features x Neurons
         """
-        w = np.random.normal(self.m_weights, self.sigma_weights, n_features + 1)  # + 1 is bias
+        w = np.random.normal(self.m_weights, self.sigma_weights, n_features)
 
         for j in range(self.nodes - 1):
-            w_j = np.random.normal(self.m_weights, self.sigma_weights, n_features + 1)  # + 1 is bias
+            w_j = np.random.normal(self.m_weights, self.sigma_weights, n_features)
             w = np.vstack((w, w_j))
         w = w.reshape(-1,1)
         return w
 
-    def shape_input(self, X, Y, n_features):
-        """
-        Add bias as input vector (feature) in the data and shuffle them
-        """
-        index_shuffle = np.random.permutation(X.shape[0])
-        X = X[index_shuffle]
-        Y = Y[index_shuffle]
-        bias = - np.ones((X.shape[0], 1))  # put a minus in front
-        X = np.hstack((X, bias))  # changed so bias is after (before it was beginning)
-        return X, Y
 
     def train(self, verbose=False):
         """

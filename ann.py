@@ -41,7 +41,7 @@ class ANN:
             setattr(self, var, kwargs.get(var, default))
 
         self.n_features = data.shape[1]
-        self.train_data, self.train_targets = self.shape_input(data, targets)
+        self.train_data, self.train_targets = data, targets
         self.w = self.init_weights()
         self.error_history = []
 
@@ -50,26 +50,15 @@ class ANN:
         """
         Initialize weight matrix Features x Neurons
         """
-        w = np.random.normal(self.m_weights, self.sigma_weights, self.n_features + 1)  # + 1 is bias
+        w = np.random.normal(self.m_weights, self.sigma_weights, self.n_features)
 
         if (self.nodes == 1):
             return w.reshape(-1,1)
         else:
             for j in range(self.nodes - 1):
-                w_j = np.random.normal(self.m_weights, self.sigma_weights, self.n_features + 1)  # + 1 is bias
+                w_j = np.random.normal(self.m_weights, self.sigma_weights, self.n_features)
                 w = np.vstack((w, w_j))
         return w.T
-
-    def shape_input(self, X, Y):
-        """
-        Add bias as input vector (feature) in the data and shuffle them
-        """
-        index_shuffle = np.random.permutation(X.shape[0])
-        X = X[index_shuffle]
-        Y = Y[index_shuffle]
-        bias_vec = self.bias * np.ones((X.shape[0], 1))  # add bias
-        X = np.hstack((X, bias_vec))  #  bias is the last element of each input
-        return X, Y
 
     def train_batch(self, verbose=False):
         """
@@ -151,7 +140,6 @@ class ANN:
         """
         Test trained ANN
         """
-        test_data, test_targets = self.shape_input(test_data, test_targets)
         test_predictions = np.dot(test_data, self.w)
         self.sum = test_predictions
         targets_pred = self.activation_function()
