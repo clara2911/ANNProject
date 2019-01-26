@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 
 class MLP:
 
-    def __init__(self, data, targets, **kwargs):
+    def __init__(self, data, targets, structure, **kwargs):
         """
         Initialize Neural Network with data and parameters
         """
@@ -36,29 +36,22 @@ class MLP:
 
         self.n_features = data.shape[1]
 
-
         self.train_data, self.train_targets = self.shape_input(data, targets)
 
-        layers = collections.OrderedDict()
-        layers['0'] = self.n_features + 1
-        layers['1'] = 5
-        layers['2'] = 3
-        layers['3'] = self.train_data.shape[0]
-
         self.num_of_hidden_layers = 3
-        self.weights = self.init_weights(layers)
+        self.weights = self.init_weights(structure)
         self.error_history = []
 
 
-    def init_weights(self, layers):
+    def init_weights(self, structure):
         """
         Initialize weight matrix Features x Neurons
         """
-        layers_list = []
+        layers_list = [None] * len(structure)
 
-        for layer, weights_per_layer in layers.items():
+        for layer, weights_per_layer in structure.items():
             w_l = np.random.normal(self.m_weights, self.sigma_weights, weights_per_layer)
-            layers_list.append(w_l)
+            layers_list[layer] = (w_l)
         return layers_list
 
     def shape_input(self, X, Y):

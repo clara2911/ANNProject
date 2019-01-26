@@ -48,8 +48,16 @@ params = {
 # train ANN
 # NOTE: ANN assumes data of same class are grouped and are inputted sequentially!
 
+NN_structure = {
+    0: features,
+    1: 8,
+    2: 4,
+    3: 8,
+    4: N  # This should actually be batch_size (meaning anything from 1(sequential) to N (whole dataset as batch))
+}
+
 #perceptron
-mlp_P = MLP(X, Y, **params)
+mlp_P = MLP(X, Y, NN_structure, **params)
 mlp_P.train_batch(verbose=verbose)
 #mlp_P.train_sequential(verbose=verbose)
 # mlp_P.plot_decision_boundary_sequence(scatter = True, data=mlp_P.train_data, targets=mlp_P.train_targets)
