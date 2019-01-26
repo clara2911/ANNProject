@@ -6,7 +6,7 @@ import numpy as np
 
 
 # Data variables
-N = 100
+N = 20
 n = int(N/2)  # 2 because we have n*2 data
 features = 2  # input vectors / patterns
 
@@ -23,8 +23,10 @@ test_mB = np.array([-1.0, 0.0])
 test_sigmaB = 0.2
 
 data_base = DataBase()
-X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
-test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data)
+#X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
+#test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data)
+
+X, Y = data_base.non_linear_data(n)
 
 #in here we use batch
 verbose = True

@@ -30,3 +30,55 @@ class DataBase:
 
         return X, Y
 
+
+    def non_linear_data(self, ndata, sampleA = 1.0, sampleB = 1.0, subsamples = False, plot=False):
+        """
+        :param sampleA: percentage of data from class A that is going to be used. 100% = 100 samples.
+        :param sampleB: percentage of data from class B that is going to be used. 100% = 100 samples.
+        :param subsamples: boolean variable that indicates to the function to make a
+        special sample to cover part 4 of question 3.1.3
+        :return: samples from class A and B
+
+        This program generates data according to the parameters indicated by 3.1.3.
+        Then It samples randomly the amount of data according to sampleA and sample B (fractions).
+        """
+
+        mA = [1.0, 0.3]
+        sigmaA = 0.2
+        mB = [0.0, -0.1]
+        sigmaB = 0.3
+
+        classA = np.empty((2, ndata))
+        classB = np.empty((2, ndata))
+        classA[1, :] = np.random.randn(ndata) * sigmaA + mA[1]
+        classA[0, :] = np.hstack((np.random.randn(int(ndata/2)) * sigmaA - mA[0], np.random.randn(int(ndata/2)) * sigmaA + mA[0]))
+        classB[0, :] = np.random.randn(ndata) * sigmaB + mB[0]
+        classB[1, :] = np.random.randn(ndata) * sigmaB + mB[1]
+
+        targetA = np.ones(ndata)
+        targetB = np.ones(ndata)*-1
+
+        #sample
+        if subsamples: #special case
+            pos_ind = np.where(classA[0, :] > 0)[0]
+            neg_ind = np.where(classA[0, :] < 0)[0]
+            indA_pos = np.random.choice(pos_ind, int(0.2 * len(pos_ind)), replace=False)
+            indA_neg = np.random.choice(neg_ind, int(0.8 * len(neg_ind)), replace=False)
+            indA = np.hstack((indA_pos, indA_neg))
+            indB = range(len(targetB))
+        else: #general case
+            indA = np.random.choice(range(len(targetA)), int(sampleA * len(targetA)), replace=False)
+            indB = np.random.choice(range(len(targetB)), int(sampleB * len(targetB)), replace=False)
+
+        classA = classA[:, indA]
+        classB = classB[:, indB]
+        targetA = targetA[indA]
+        targetB = targetB[indB]
+
+        if (plot):
+            self.plot_data(classA, classB)
+
+        X = np.hstack((classA, classB))
+        Y = np.hstack((targetA, targetB))
+
+        return X.T, Y.reshape(-1,1)
