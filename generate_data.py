@@ -31,7 +31,7 @@ class DataBase:
         return X, Y
 
 
-    def non_linear_data(self, ndata, sampleA = 1.0, sampleB = 1.0, subsamples = False, plot=False):
+    def non_linear_data(self, ndata, mA, mB, sigmaA, sigmaB, sampleA=1.0, sampleB=1.0, subsamples=False, plot=False):
         """
         :param sampleA: percentage of data from class A that is going to be used. 100% = 100 samples.
         :param sampleB: percentage of data from class B that is going to be used. 100% = 100 samples.
@@ -43,10 +43,7 @@ class DataBase:
         Then It samples randomly the amount of data according to sampleA and sample B (fractions).
         """
 
-        mA = [1.0, 0.3]
-        sigmaA = 0.2
-        mB = [0.0, -0.1]
-        sigmaB = 0.3
+
 
         classA = np.empty((2, ndata))
         classB = np.empty((2, ndata))

@@ -38,7 +38,7 @@ class MLP:
 
         self.train_data, self.train_targets = self.shape_input(data, targets)
 
-        self.num_of_hidden_layers = 3
+        self.num_of_hidden_layers = len(structure) - 1  # do not consider the output layer as a hidden
         self.weights = self.init_weights(structure)
         self.error_history = []
 
@@ -47,7 +47,7 @@ class MLP:
         """
         Initialize weight matrix Features x Neurons
         """
-        layers_list = [None] * len(structure)
+        layers_list = [None] * (self.num_of_hidden_layers + 1)  # +1 is the output layer
 
         for layer, weights_per_layer in structure.items():
             w_l = np.random.normal(self.m_weights, self.sigma_weights, weights_per_layer)
@@ -77,8 +77,6 @@ class MLP:
 
             data = self.train_data  # Data dimensions: Features + 1 x N_batch_size
             targets = self.train_targets  # N_batch_size
-
-            final_out = np.zeros(self.train_data.shape[0])
 
             # FORWARD PASS!!!
             for feature in range(self.train_data.shape[1]):  # for every input vector / feature
