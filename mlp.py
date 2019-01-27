@@ -75,117 +75,122 @@ class MLP:
 
         for iteration in range(self.epochs):
 
-            data = self.train_data  # Data dimensions: Features + 1 x N_batch_size
-            targets = self.train_targets  # N_batch_size
+            for i in range(0, self.train_data.shape[0], self.batch_size):
 
-            # FORWARD PASS!!!
-            for feature in range(self.train_data.shape[1]):  # for every input vector / feature
-                # for every input vector / feature
-                data = self.train_data[:,feature]
+                start = i
+                end = i + self.batch_size
 
-                input_of_layer = data.reshape(-1,1)  # Shape it so that N_batch_size x 1
+                data = self.train_data[start:end]  # Data dimensions: Features + 1 x N_batch_size
+                targets = self.train_targets[start:end]  # N_batch_size
 
-                # INPUT LAYER AND HIDDEN LAYERS
-                for layer in range(self.num_of_hidden_layers):  # layer index depicted as zeta
+                # FORWARD PASS!!!
+                for feature in range(self.train_data.shape[1]):  # for every input vector / feature
+                    # for every input vector / feature
+                    data = self.train_data[:,feature]
 
-                    # WEIGHTS ARE MATRIX (Different column for every feature?) OR JUST ONE COLUMN PER LAYER?
-                    w_zeta = self.weights[layer].reshape(-1,1).T  # Shape it so that 1 x L/M (Number of nodes (Neurons) of layer)
+                    input_of_layer = data.reshape(-1,1)  # Shape it so that N_batch_size x 1
 
-                    # data: N_batch_size x 1
-                    # weights (input layer): 1 x L/M nodes (NEURONS) of layer
-                    h_zeta_matrix = np.dot(input_of_layer, w_zeta)  # h_zeta: N_batch_size x L/M  (eq 4.4)
+                    # INPUT LAYER AND HIDDEN LAYERS
+                    for layer in range(self.num_of_hidden_layers):  # layer index depicted as zeta
 
-                    h_zeta = np.sum(h_zeta_matrix, axis=0)  # L/M x 1  (eq 4.4)
+                        # WEIGHTS ARE MATRIX (Different column for every feature?) OR JUST ONE COLUMN PER LAYER?
+                        w_zeta = self.weights[layer].reshape(-1,1).T  # Shape it so that 1 x L/M (Number of nodes (Neurons) of layer)
 
-                    h_zeta = h_zeta.reshape(-1, 1)  # 1 x L/M
+                        # data: N_batch_size x 1
+                        # weights (input layer): 1 x L/M nodes (NEURONS) of layer
+                        h_zeta_matrix = np.dot(input_of_layer, w_zeta)  # h_zeta: N_batch_size x L/M  (eq 4.4)
 
-                    alpha_zeta = self.sigmoid_function(h_zeta, beta=self.beta)  # output of layer zeta
+                        h_zeta = np.sum(h_zeta_matrix, axis=0)  # L/M x 1  (eq 4.4)
 
-                    input_of_layer = alpha_zeta  # the output of the current layer is the input of the next
+                        h_zeta = h_zeta.reshape(-1, 1)  # 1 x L/M
 
-                    self.alpha_layer_out[layer] = alpha_zeta  # thresholded output of zeta layer
-                    self.weights[layer] = w_zeta  # weights of zeta layer
+                        alpha_zeta = self.sigmoid_function(h_zeta, beta=self.beta)  # output of layer zeta
 
-                # OUTPUT LAYER
-                w_kapa = self.weights[-1].reshape(-1,1).T  # Layer k weights (Hidden layer): 1 x M_k current layer's hidden nodes (NEURONS)
+                        input_of_layer = alpha_zeta  # the output of the current layer is the input of the next
 
-                h_kapa_matrix = np.dot(input_of_layer, w_kapa)  # (1 x M_(k-1)) * (M_k x 1) = M_(k-1) x (M_k)
+                        self.alpha_layer_out[layer] = alpha_zeta  # thresholded output of zeta layer
+                        self.weights[layer] = w_zeta  # weights of zeta layer
 
-                h_kapa = np.sum(h_kapa_matrix, axis=0)  # M_k x 1
+                    # OUTPUT LAYER
+                    w_kapa = self.weights[-1].reshape(-1,1).T  # Layer k weights (Hidden layer): 1 x M_k current layer's hidden nodes (NEURONS)
 
-                h_kapa = h_kapa.reshape(-1, 1)  # 1 x M_k
+                    h_kapa_matrix = np.dot(input_of_layer, w_kapa)  # (1 x M_(k-1)) * (M_k x 1) = M_(k-1) x (M_k)
 
-                alpha_kapa = self.sigmoid_function(h_kapa)  # output of layer k
+                    h_kapa = np.sum(h_kapa_matrix, axis=0)  # M_k x 1
 
-                self.weights[-1] = w_kapa  # weights of k layer
+                    h_kapa = h_kapa.reshape(-1, 1)  # 1 x M_k
 
-                outputs = alpha_kapa
+                    alpha_kapa = self.sigmoid_function(h_kapa)  # output of layer k
 
-                # BACKWARD PASS !!!
+                    self.weights[-1] = w_kapa  # weights of k layer
 
-                # compute Output ERROR
-                delta_out_k = (outputs - targets) * outputs * (1.0 - outputs)  # delta_out: N_batch_size x 1
+                    outputs = alpha_kapa
 
-                # compute Hidden error
-                delta_h = [None] * self.num_of_hidden_layers
+                    # BACKWARD PASS !!!
 
-                # first -1: we ignore the output layer, second -1: we want to include 0 index, third -1: iterate from last to first
-                for layer in range(self.num_of_hidden_layers-1, -1, -1):  # layer index depicted as zeta
+                    # compute Output ERROR
+                    delta_out_k = (outputs - targets) * outputs * (1.0 - outputs)  # delta_out: N_batch_size x 1
 
-                    part1 = self.alpha_layer_out[layer] * (1.0 - self.alpha_layer_out[layer])  # 1 x M_(zeta)
+                    # compute Hidden error
+                    delta_h = [None] * self.num_of_hidden_layers
 
-                    w_zeta = self.weights[layer]  # 1 x M_zeta
+                    # first -1: we ignore the output layer, second -1: we want to include 0 index, third -1: iterate from last to first
+                    for layer in range(self.num_of_hidden_layers-1, -1, -1):  # layer index depicted as zeta
 
-                    part2_matrix = np.dot(delta_out_k, w_zeta)  # (1 x N_batch_size) * (1 x M_zeta) = N_batch_size x M_zeta
+                        part1 = self.alpha_layer_out[layer] * (1.0 - self.alpha_layer_out[layer])  # 1 x M_(zeta)
 
-                    part2 = np.sum(part2_matrix, axis=0)  # M_zeta x 1
+                        w_zeta = self.weights[layer]  # 1 x M_zeta
 
-                    part2 = part2.reshape(-1, 1)  # 1 x M_zeta
+                        part2_matrix = np.dot(delta_out_k, w_zeta)  # (1 x N_batch_size) * (1 x M_zeta) = N_batch_size x M_zeta
 
-                    delta_h_zeta = part1 * part2  # 1 x M_zeta * 1 x M_zeta = 1 x M_zeta
+                        part2 = np.sum(part2_matrix, axis=0)  # M_zeta x 1
 
-                    delta_h[layer] = delta_h_zeta
+                        part2 = part2.reshape(-1, 1)  # 1 x M_zeta
 
+                        delta_h_zeta = part1 * part2  # 1 x M_zeta * 1 x M_zeta = 1 x M_zeta
 
-                # UPDATING !!!
-                # update output layer
-                input_of_output_layer = self.alpha_layer_out[-1]  # output of layer before output = input of output layer
-
-                for node in range(self.weights[-1].shape[1]):
-                    update_out_w = 0
-                    for input in input_of_output_layer:
-                        update_out_w += self.learning_rate * input * delta_out_k[node]
-
-                    self.weights[-1][0][node] = self.weights[-1][0][node] - update_out_w
-
-                # TODO: WATCHOUT: Check if this is correct
-                # update_out_w = self.learning_rate * np.dot(input_of_output_layer, delta_out_k)  # (1 x M_prev_layer) * (1 x M_k) = 1 x M_k (output nodes)
-                # self.weights[-1] = self.weights[-1] - update_out_w  # TODO: Is it - or +? page 78: - , page 79: +
+                        delta_h[layer] = delta_h_zeta
 
 
-                # update hidden layers
-                # first -1: we ignore the output layer, 0: we DONT want to include 0 index, third -1: iterate from last to first
-                for layer in range(self.num_of_hidden_layers-1, 0, -1):  # layer index depicted as zeta
-                    input_of_layer = self.alpha_layer_out[layer - 1]  # output of previous layer is input of current layer
+                    # UPDATING !!!
+                    # update output layer
+                    input_of_output_layer = self.alpha_layer_out[-1]  # output of layer before output = input of output layer
 
-                    for node in range(self.weights[layer].shape[1]):
+                    for node in range(self.weights[-1].shape[1]):
+                        update_out_w = 0
+                        for input in input_of_output_layer:
+                            update_out_w += self.learning_rate * input * delta_out_k[node]
+
+                        self.weights[-1][0][node] = self.weights[-1][0][node] - update_out_w
+
+                    # TODO: WATCHOUT: Check if this is correct
+                    # update_out_w = self.learning_rate * np.dot(input_of_output_layer, delta_out_k)  # (1 x M_prev_layer) * (1 x M_k) = 1 x M_k (output nodes)
+                    # self.weights[-1] = self.weights[-1] - update_out_w  # TODO: Is it - or +? page 78: - , page 79: +
+
+
+                    # update hidden layers
+                    # first -1: we ignore the output layer, 0: we DONT want to include 0 index, third -1: iterate from last to first
+                    for layer in range(self.num_of_hidden_layers-1, 0, -1):  # layer index depicted as zeta
+                        input_of_layer = self.alpha_layer_out[layer - 1]  # output of previous layer is input of current layer
+
+                        for node in range(self.weights[layer].shape[1]):
+                            update_w_k = 0
+                            for input in input_of_layer:
+                                update_w_k += self.learning_rate * input * delta_h[layer][node]
+
+                            self.weights[layer][0][node] = self.weights[layer][0][node] - update_w_k
+
+                        # update_h_w = self.learning_rate * np.dot(input_of_layer, delta_h[hidden_layer])
+                        # self.weights[hidden_layer] = self.weights[hidden_layer] - update_h_w  # Is it - or +? page 78: - , page 79: +
+
+                    # update first layer
+                    # update_in_w = self.learning_rate * np.dot(data, delta_h[0])
+                    # self.weights[0] = self.weights[0] - update_in_w
+                    for node in range(self.weights[0].shape[1]):
                         update_w_k = 0
-                        for input in input_of_layer:
-                            update_w_k += self.learning_rate * input * delta_h[layer][node]
-
-                        self.weights[layer][0][node] = self.weights[layer][0][node] - update_w_k
-
-                    # update_h_w = self.learning_rate * np.dot(input_of_layer, delta_h[hidden_layer])
-                    # self.weights[hidden_layer] = self.weights[hidden_layer] - update_h_w  # Is it - or +? page 78: - , page 79: +
-
-                # update first layer
-                # update_in_w = self.learning_rate * np.dot(data, delta_h[0])
-                # self.weights[0] = self.weights[0] - update_in_w
-                for node in range(self.weights[0].shape[1]):
-                    update_w_k = 0
-                    for input in data:
-                        update_w_k += self.learning_rate * input * delta_h[0][node]
-                    self.weights[0][0][node] = self.weights[0][0][node] - update_w_k
+                        for input in data:
+                            update_w_k += self.learning_rate * input * delta_h[0][node]
+                        self.weights[0][0][node] = self.weights[0][0][node] - update_w_k
 
 
         self.sum = outputs

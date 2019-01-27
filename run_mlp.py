@@ -35,7 +35,7 @@ X, Y = data_base.non_linear_data(n, non_mA, non_mB, non_sigmaA, non_sigmaB)
 verbose = True
 params = {
     "learning_rate": 0.01,
-    "batch_size": 6,
+    "batch_size": N,
     "theta": 0,
     "epsilon": 0.0,  # slack for error during training
     "epochs": 100,
@@ -56,7 +56,7 @@ NN_structure = {
     1: 8,
     2: 4,
     3: 8,
-    4: N  # This should actually be batch_size (meaning anything from 1(sequential) to N (whole dataset as batch))
+    4: params["batch_size"]  # This should actually be batch_size (meaning anything from 1(sequential) to N (whole dataset as batch))
 }
 
 #perceptron
