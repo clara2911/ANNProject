@@ -1,6 +1,7 @@
 # import local files
 from generate_data import DataBase
-from mlp import MLP
+# from mlp import MLP
+from two_layer import MLP
 import matplotlib.pylab as plt
 import numpy as np
 
@@ -8,7 +9,7 @@ import numpy as np
 # Data variables
 N = 20
 n = int(N / 2)  # 2 because we have n*2 data
-test_N = 50
+test_N = 20
 test_n = int(test_N / 2)
 features = 2  # input vectors / patterns
 
@@ -30,12 +31,13 @@ data_base = DataBase()
 #test_X, test_Y = data_base.make_data(test_n, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
 
 X, Y = data_base.non_linear_data(n, non_mA, non_mB, non_sigmaA, non_sigmaB)
+test_X, test_Y = data_base.non_linear_data(n, non_mA, non_mB, non_sigmaA, non_sigmaB)
 
 #in here we use batch
 verbose = True
 params = {
     "learning_rate": 0.01,
-    "batch_size": N,
+    "batch_size": 5,  # setting it as 1 means sequential learning
     "theta": 0,
     "epsilon": 0.0,  # slack for error during training
     "epochs": 100,
@@ -52,11 +54,11 @@ params = {
 # NOTE: ANN assumes data of same class are grouped and are inputted sequentially!
 
 NN_structure = {
-    0: features,
-    1: 8,
-    2: 4,
-    3: 8,
-    4: params["batch_size"]  # This should actually be batch_size (meaning anything from 1(sequential) to N (whole dataset as batch))
+    0: 4,
+    #1: 8,
+    #2: 4,
+    #3: 8,
+    1: 6#params["batch_size"]  # This should actually be batch_size (meaning anything from 1(sequential) to N (whole dataset as batch))
 }
 
 #perceptron
@@ -64,7 +66,7 @@ mlp_P = MLP(X, Y, NN_structure, **params)
 mlp_P.train_batch(verbose=verbose)
 #mlp_P.train_sequential(verbose=verbose)
 # mlp_P.plot_decision_boundary_sequence(scatter = True, data=mlp_P.train_data, targets=mlp_P.train_targets)
-#mlp_P.test(test_X, test_Y)
+mlp_P.test(test_X, test_Y)
 
 #delta rule
 params['learn_method'] = 'delta_rule'
