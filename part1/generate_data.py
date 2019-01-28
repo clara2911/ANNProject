@@ -19,8 +19,8 @@ class DataBase:
         """
         This function just plot the data with scatter, raw data, no-boundaries
         """
-        plt.scatter(classA[0,:], classA[1,:], color='cyan', alpha=0.7, s=7)
-        plt.scatter(classB[0,:], classB[1,:], color='purple', alpha=0.7, s=7)
+        plt.scatter(classA[:,0], classA[:,1], color='cyan', alpha=0.7, s=7)
+        plt.scatter(classB[:,0], classB[:,1], color='purple', alpha=0.7, s=7)
         plt.axis('tight')
         plt.show()
 

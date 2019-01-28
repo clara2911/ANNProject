@@ -234,6 +234,7 @@ class ANN:
                                data=None,
                                plot_intermediate=False, # plot boundary after every epoch True/False
                                title=None, # title for plot
+                               line_titles=None,
                                data_coloring=None, # color data points as targets or predictions
                                origin_grid = False): # plot x=0 and y=0 grid
         """
@@ -290,7 +291,7 @@ class ANN:
         if title:
             ax.set_title(title)
         custom_lines = [Line2D([0], [0], color='b'), Line2D([0], [0], color='r')]
-        ax.legend(custom_lines, ['Intermediate boundaries', 'Final boundary'], frameon=False, loc='lower right')
+        ax.legend(custom_lines, [line_titles[0], line_titles[1]], frameon=False, loc='upper right')
         # ax.legend(frameon=False)
         ax.set_xlabel('$x_1$', fontsize=18)
         ax.set_ylabel('$x_2$', fontsize=18)
@@ -347,7 +348,7 @@ class ANN:
         """
         x_axis = range(1, len(self.error_history) + 1)
         y_axis = self.error_history
-        plt.scatter(x_axis, y_axis, color='purple', alpha=0.7)
+        plt.scatter(x_axis, y_axis, color='red', alpha=0.7)
         plt.show()
 
     def print_info(self, iteration, error):
