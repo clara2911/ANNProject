@@ -145,7 +145,7 @@ class DataBase:
         return patterns, targets
 
     # make one-hot encoding matrix where pos=1 and neg=-1 of length N
-    def one_hot(self, N):
-        X = -1*np.ones([N,N])
-        X[range(N), range(N)] = 1
+    def one_hot(self, N, pos, neg):
+        X = neg*np.ones([N,N])
+        X[range(N), range(N)] = pos
         return X

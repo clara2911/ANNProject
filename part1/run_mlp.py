@@ -20,7 +20,7 @@ mA = np.array([ 1.0, 0.5])
 sigmaA = 0.2
 mB = np.array([-1.0, 0.0])
 sigmaB = 0.2
-plot_data = False
+plot_data = True
 
 # Non linearly separable data
 non_mA = [1.0, 0.3]
@@ -61,5 +61,7 @@ NN_structure = {
 params["theta"] = 0.5  # TODO: FIX THIS
 mlp = MLP(X, Y, NN_structure, **params)
 out = mlp.train(verbose=verbose)
+print("predicted: ", out)
+print("targets: ", Y)
 mlp.plot_error_history()
 mlp.test(test_X, test_Y)

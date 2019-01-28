@@ -81,6 +81,8 @@ class MLP:
                 self.backward_pass(data, targets, out)
 
         self.sum = out
+        print("unthreshed: ")
+        print(self.sum)
         out = self.step()
         print('Training Error: ', self.missclass_error(out, targets))
         return out

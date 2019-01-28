@@ -9,47 +9,42 @@ import numpy as np
 import matplotlib.pylab as plt
 from generate_data import DataBase
 from ann import ANN
+from two_layer import MLP
 
 def main():
     # Data variables
     N = 8
     data_base = DataBase()
-    X = data_base.one_hot(N)
+    X = data_base.one_hot(N, 1, -1) #N, pos, neg
     encoder_learn(X)
 
 def encoder_learn(X):
-    pass
-    # # here we use batch
     verbose = False
-    # fig, ax = plt.subplots()
     params = {
         "learning_rate": 0.1,
-        "batch_size": 1,
+        "batch_size": X.shape[1],  # setting it as 1 means sequential learning
         "theta": 0,
         "epsilon": 0.0,  # slack for error during training
-        "epochs": 50,
+        "epochs": 100,
         "act_fun": 'step',
         "test_data": None,
         "test_targets": None,
-        "m_weights": 0,
-        "sigma_weights": 0.5,
-        "nodes": 1,
-        "learn_method": 'delta_rule',  # 'delta_rule' or 'perceptron'
-        "bias": 0
+        "m_weights": 0.1,
+        "sigma_weights": 0.1,
+        "beta": 1
     }
-    ann = ANN(X, X, **params)
-    ann.train_batch(verbose=verbose)
-    targets = ann.train_targets
-    predictions = ann.predictions
-    print(ann.mse(predictions, targets))
-    # # ax.plot(range(len(ann.error_history)), ann.error_history)
-    # ann.plot_decision_boundary(
-    #         data=ann.train_data,
-    #         plot_intermediate=True,
-    #         title='Learning without bias',
-    #         data_coloring = ann.train_targets,
-    #         origin_grid=True
-    #         )
+
+    # train ANN
+    NN_structure = {
+        0: 3,  # hidden layer
+        1: X.shape[0]  # output layer
+    }
+    mlp = MLP(X, X, NN_structure, **params)
+    out = mlp.train(verbose=verbose)
+    print("predicted: ", out)
+    print("targets: ", X)
+    # mlp.plot_error_history()
+    # mlp.test(test_X, test_Y)
 
 if __name__ == "__main__":
     main()
