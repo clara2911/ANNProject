@@ -83,7 +83,7 @@ def train_test():
         1: 1  # output layer
     }
 
-    params["theta"] = 0.5  # TODO: FIX THIS
+    params["theta"] = 0.2 # or 0.5 or .......  # TODO: FIX THIS
     mlp = MLP(X, Y, NN_structure, **params)
     out = mlp.train(verbose=verbose)
     print("predicted: ", out)

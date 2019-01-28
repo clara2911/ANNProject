@@ -130,26 +130,59 @@ class MLP:
         """
         Calculate the error for all the weights and update them using generalized Delta rule
         """
-        # compute Output ERROR
-        delta_out_k = (out - targets) * out * (1.0 - out)  # delta_out: N_batch_size x M
+        p_way = True
 
-        # compute Hidden error
-        w_kapa = self.weights[-1].T
+        if (p_way):
+            part1_o = out - targets
+            part2_o = ( (1 + out) * (1 - out) ) * 0.5
+            delta_o = part1_o * part2_o  # np.dot(part1_o, part2_o)
 
-        delta_out_k = delta_out_k.T
-        part1 = self.alpha_layer_out[0] * (1.0 - self.alpha_layer_out[0])  # N x L
-        part2 = np.dot(w_kapa, delta_out_k).T
-        delta_h = part1 * part2
+            v = self.weights[-1].T  # is it v? or something else?
+            delta_o = delta_o.T
+            h_out = self.alpha_layer_out[0]
+            part1_h = np.dot(v, delta_o)  # v * delta_o
+            part2_h = ( (1 + h_out) * (1 - h_out) ) * 0.5
+            part2_h = part2_h.T
+            delta_h = part1_h * part2_h  # np.dot(part1_h, part2_h)
 
-        # UPDATING !!!
-        # update output layer
-        h_out = self.alpha_layer_out[0]
-        update_out_w = self.learning_rate * np.dot(h_out.T, delta_out_k.T) #[node])
-        self.weights[-1] = self.weights[-1] - update_out_w.T
+            # delta_h # remove bias line?
 
-        # update first layer
-        update_w_k = self.learning_rate * np.dot(data.T, delta_h)
-        self.weights[0] = self.weights[0] - update_w_k.T
+            momentum = 0.9
+            part1_dw = np.dot(delta_h, data)  # delta_h * data
+            part2_dw = (1 - momentum)
+            dw = - part1_dw * part2_dw # np.dot(part1_dw, part2_dw)
+            dw = dw * self.learning_rate
+
+            part1_dv = np.dot(delta_o, h_out)  # delta_o * h_out
+            part2_dv = (1 - momentum)
+            dv = - part1_dv * part2_dv  # np.dot(part1_dv, part2_dv)
+            dv = dv * self.learning_rate
+
+            self.weights[0] = self.weights[0] + dw
+            self.weights[-1] = self.weights[-1] + dv
+
+        else:
+            # compute Output ERROR
+            delta_out_k = (out - targets) * out * (1.0 - out)  # delta_out: N_batch_size x M
+
+            # compute Hidden error
+            w_kapa = self.weights[-1].T
+
+            delta_out_k = delta_out_k.T
+            part1 = self.alpha_layer_out[0] * (1.0 - self.alpha_layer_out[0])  # N x L
+            part2 = np.dot(w_kapa, delta_out_k).T
+            delta_h = part1 * part2
+
+            # UPDATING !!!
+            # update output layer
+            h_out = self.alpha_layer_out[0]
+            update_out_w = self.learning_rate * np.dot(h_out.T, delta_out_k.T) #[node])
+            self.weights[-1] = self.weights[-1] - update_out_w.T
+
+            # update first layer
+            update_w_k = self.learning_rate * np.dot(data.T, delta_h)
+            self.weights[0] = self.weights[0] - update_w_k.T
+
 
     def test(self, test_data, test_targets):
         """
