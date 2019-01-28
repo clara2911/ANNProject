@@ -1,6 +1,7 @@
 import collections
 import numpy as np
 from matplotlib import pyplot as plt
+from sklearn.metrics import mean_squared_error as sk_mse
 
 class MLP:
 
@@ -9,15 +10,14 @@ class MLP:
         Initialize Neural Network with data and parameters
         """
         var_defaults = {
-            "learning_rate": 0.5,
+            "learning_rate": 0.01,
             "batch_size": 1,
             "theta": 0,
             "epsilon": 0.0,
-            "epochs": 10,
+            "epochs": 100,
             "m_weights": 0.1,
             "sigma_weights": 0.05,
             "nodes": 1,
-            "error": 1.0,
             "beta": 1.0,
             "bias": -1
         }
@@ -31,7 +31,7 @@ class MLP:
 
         self.num_of_hidden_layers = len(structure) - 1  # do not consider the output layer as a hidden
         self.weights = self.init_weights(structure)
-        self.error_history = []
+        self.error_history = {'mse': [], 'miss': []}
 
 
     def init_weights(self, structure):
@@ -58,10 +58,9 @@ class MLP:
         """
         Train neural network
         """
-        self.error_history = []
-
         self.alpha_layer_out = [None] * self.num_of_hidden_layers  # Output layer is NOT considered a HIDDEN LAYER
 
+        self.theta = 0.5
         for iteration in range(self.epochs):
 
             for i in range(0, self.train_data.shape[0], self.batch_size):  # for every input vector
@@ -73,11 +72,18 @@ class MLP:
                 targets = self.train_targets[start:end]  # N_batch_size
 
                 out = self.forward_pass(data)
+
+                self.sum = out
+                out_thres = self.step()
+                miss_error = self.missclass_error(out_thres, targets)
+                mse_error = self.mse(out, targets)
+                self.error_history['miss'].append(miss_error)
+                self.error_history['mse'].append(mse_error)
                 self.backward_pass(data, targets, out)
 
         self.sum = out
-        self.theta = 0.9
         out = self.step()
+        print(out, targets)
         print('Training Error: ', self.missclass_error(out, targets))
 
 
@@ -138,7 +144,7 @@ class MLP:
         targets_pred = self.forward_pass(test_data)
         # TODO: change the output to your liking
         self.sum = targets_pred
-        self.theta = 0.9
+        self.theta = 0.5
         targets_pred = self.step()
         error = self.missclass_error(targets_pred, test_targets)
 
@@ -167,13 +173,23 @@ class MLP:
         miss = len(np.where(predictions != targets)[0])
         return float(miss/len(targets))
 
+    def mse(self, predictions, targets):
+        """
+        Calculate Mean Squered Error
+        """
+        mse = sk_mse(predictions, targets)
+        return mse
+
     def plot_error_history(self):
         """
         Plot the history of the error (show how quickly the NN converges)
         """
-        x_axis = range(1, len(self.error_history) + 1)
-        y_axis = self.error_history
-        plt.scatter(x_axis, y_axis, color='purple', alpha=0.7)
+        x_axis_miss = range(1, len(self.error_history['miss']) + 1)
+        y_axis_miss = self.error_history['miss']
+        x_axis_mse = range(1, len(self.error_history['mse']) + 1)
+        y_axis_mse = self.error_history['mse']
+        plt.plot(x_axis_miss, y_axis_miss, color='purple', alpha=0.7)
+        plt.plot(x_axis_mse, y_axis_mse, color='red', alpha=0.7)
         plt.show()
 
     def print_info(self, iteration, error):
