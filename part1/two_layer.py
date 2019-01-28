@@ -58,6 +58,9 @@ class MLP:
         """
         Train neural network
         """
+
+        self.validation_error_during_train = {'mse':[], 'miss':[]}
+
         self.alpha_layer_out = [None] * self.num_of_hidden_layers  # Output layer is NOT considered a HIDDEN LAYER
 
         for iteration in range(self.epochs):
@@ -71,20 +74,31 @@ class MLP:
                 targets = self.train_targets[start:end]  # N_batch_size
 
                 out = self.forward_pass(data)
-
-                self.sum = out
-                out_thres = self.step()
-                miss_error = self.missclass_error(out_thres, targets)
-                mse_error = self.mse(out, targets)
-                self.error_history['miss'].append(miss_error)
-                self.error_history['mse'].append(mse_error)
                 self.backward_pass(data, targets, out)
+
+            train_out = self.forward_pass(self.train_data)
+            self.sum = train_out
+            out_thres = self.step()
+            miss_error = self.missclass_error(out_thres, self.train_targets)
+            mse_error = self.mse(out_thres, self.train_targets)
+            self.error_history['miss'].append(miss_error)
+            self.error_history['mse'].append(mse_error)
+
+            #val_out = self.forward_pass(validation_data)
+            #self.sum = val_out
+            #val_miss_error = self.missclass_error(val_out, val_targets)
+            #val_mse_error = self.mse(val_out, val_targets)
+            #self.validation_error_during_train['miss'].append(val_miss_error)
+            #self.validation_error_during_train['mse'].append(val_mse_error)
 
         self.sum = out
         print("unthreshed: ")
         print(self.sum)
         out = self.step()
         print('Training Error: ', self.missclass_error(out, targets))
+
+        self.plot_error_history(self.error_history)
+        #self.plot_error_history(self.validation_error_during_train)
         return out
 
     def forward_pass(self, data):
@@ -179,14 +193,14 @@ class MLP:
         mse = sk_mse(predictions, targets)
         return mse
 
-    def plot_error_history(self):
+    def plot_error_history(self, error_history):
         """
         Plot the history of the error (show how quickly the NN converges)
         """
-        x_axis_miss = range(1, len(self.error_history['miss']) + 1)
-        y_axis_miss = self.error_history['miss']
-        x_axis_mse = range(1, len(self.error_history['mse']) + 1)
-        y_axis_mse = self.error_history['mse']
+        x_axis_miss = range(1, len(error_history['miss']) + 1)
+        y_axis_miss = error_history['miss']
+        x_axis_mse = range(1, len(error_history['mse']) + 1)
+        y_axis_mse = error_history['mse']
         plt.plot(x_axis_miss, y_axis_miss, color='purple', alpha=0.7)
         plt.plot(x_axis_mse, y_axis_mse, color='red', alpha=0.7)
         plt.show()
