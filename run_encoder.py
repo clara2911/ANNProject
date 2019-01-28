@@ -2,7 +2,7 @@
 """
 Main file for data generalization with an auto-encoder
 
-Authors: Clara Tump, Kostis SZ... and Romina Azz...
+Authors: Clara Tump, Kostis SZ and Romina Azz
 """
 
 import numpy as np
