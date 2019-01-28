@@ -27,7 +27,7 @@ class MLP:
 
         self.n_features = data.shape[1]
 
-        self.train_data, self.train_targets = self.shape_input(data, targets)
+        self.train_data, self.train_targets = data, targets
 
         self.num_of_hidden_layers = len(structure) - 1  # do not consider the output layer as a hidden
         self.weights = self.init_weights(structure)
@@ -44,7 +44,7 @@ class MLP:
             if (layer == 0):
                 first_layer_weights = []
                 for node in range(structure[0]):
-                    first_layer_weights.append(np.random.normal(self.m_weights, self.sigma_weights, self.n_features + 1))
+                    first_layer_weights.append(np.random.normal(self.m_weights, self.sigma_weights, self.n_features))
                 layers_list[0] = np.array(first_layer_weights)
             else:
                 w_l = []
@@ -53,17 +53,6 @@ class MLP:
                     w_l.append(np.random.normal(self.m_weights, self.sigma_weights, dim_out_prev_layer))
                 layers_list[layer] = np.array(w_l)
         return layers_list
-
-    def shape_input(self, X, Y):
-        """
-        Add bias as input vector (feature) in the data and shuffle them
-        """
-        index_shuffle = np.random.permutation(X.shape[0])
-        X = X[index_shuffle]
-        Y = Y[index_shuffle]
-        bias_vec = self.bias * np.ones((X.shape[0], 1))  # put a minus in front
-        X = np.hstack((X, bias_vec))  #  changed so bias is after (before it was beginning)
-        return X, Y
 
     def train(self, verbose=False):
         """
@@ -146,7 +135,6 @@ class MLP:
         """
         Test trained ANN
         """
-        test_data, test_targets = self.shape_input(test_data, test_targets)
         targets_pred = self.forward_pass(test_data)
         # TODO: change the output to your liking
         self.sum = targets_pred
@@ -162,7 +150,6 @@ class MLP:
         """
         Compute the sigmoid function given a threshold beta
         """
-        beta = -1
         denominator = 1 + np.exp(-beta * h_zeta)
         return 1 / denominator
 
