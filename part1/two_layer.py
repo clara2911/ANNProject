@@ -60,7 +60,6 @@ class MLP:
         """
         self.alpha_layer_out = [None] * self.num_of_hidden_layers  # Output layer is NOT considered a HIDDEN LAYER
 
-        self.theta = 0.5
         for iteration in range(self.epochs):
 
             for i in range(0, self.train_data.shape[0], self.batch_size):  # for every input vector
@@ -83,9 +82,8 @@ class MLP:
 
         self.sum = out
         out = self.step()
-        print(out, targets)
         print('Training Error: ', self.missclass_error(out, targets))
-
+        return out
 
     def forward_pass(self, data):
         """
@@ -108,7 +106,7 @@ class MLP:
 
         o_in = np.dot(h_out, w_kapa)  # (N x L) * (L x M)
 
-        out = self.sigmoid_function(o_in)  # output of layer k
+        out = self.sigmoid_function(o_in, beta=self.beta)  # output of layer k
         return out
 
 
@@ -144,7 +142,6 @@ class MLP:
         targets_pred = self.forward_pass(test_data)
         # TODO: change the output to your liking
         self.sum = targets_pred
-        self.theta = 0.5
         targets_pred = self.step()
         error = self.missclass_error(targets_pred, test_targets)
 

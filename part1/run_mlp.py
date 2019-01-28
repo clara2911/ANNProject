@@ -7,7 +7,7 @@ import numpy as np
 
 
 # Data variables
-N = 100
+N = 10
 n = int(N / 2)  # 2 because we have n*2 data
 test_N = 20
 test_n = int(test_N / 2)
@@ -49,7 +49,6 @@ params = {
     "test_targets": None,
     "m_weights": 0.1,
     "sigma_weights": 0.1,
-    "nodes": 10,
     "beta": 1
 }
 
@@ -58,7 +57,9 @@ NN_structure = {
     0: 10,  # hidden layer
     1: 1  # output layer
 }
+
+params["theta"] = 0.5  # TODO: FIX THIS
 mlp = MLP(X, Y, NN_structure, **params)
-mlp.train(verbose=verbose)
+out = mlp.train(verbose=verbose)
 mlp.plot_error_history()
 mlp.test(test_X, test_Y)
