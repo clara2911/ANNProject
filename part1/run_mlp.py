@@ -7,7 +7,7 @@ import numpy as np
 
 
 # Data variables
-N = 6
+N = 10
 n = int(N / 2)  # 2 because we have n*2 data
 test_N = 20
 test_n = int(test_N / 2)
@@ -43,10 +43,8 @@ params = {
     "batch_size": N,  # setting it as 1 means sequential learning
     "theta": 0,
     "epsilon": 0.0,  # slack for error during training
-    "epochs": 5,
+    "epochs": 200,
     "act_fun": 'step',
-    "test_data": None,
-    "test_targets": None,
     "m_weights": 0.1,
     "sigma_weights": 0.2,
     "beta": 1
@@ -79,16 +77,16 @@ def compare_hidden_nodes():
 def train_test():
 
     NN_structure = {
-        0: 3,  # hidden layer
+        0: 10,  # hidden layer
         1: 1  # output layer
     }
 
-    # params["theta"] = 0.2 # or 0.5 or .......  # TODO: FIX THIS
+    # params["theta"] = 0.2 # THIS IS PROBABILITY THRESHOLD OF BELONGINGE TO CLASS 1
     mlp = MLP(X, Y, NN_structure, **params)
     out = mlp.train(verbose=verbose)
     print("predicted: ", out)
     print("targets: ", Y)
-    mlp.test(test_X, test_Y)
+    # mlp.test(test_X, test_Y)
 
 def compare_batch_seq():
     params["batch_size"] = N  # setting it as 1 means sequential learning

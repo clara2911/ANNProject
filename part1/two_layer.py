@@ -77,12 +77,13 @@ class MLP:
                 self.backward_pass(data, targets, out)
 
             train_out = self.forward_pass(self.train_data)
-            #self.sum = train_out
-            #out_thres = self.step()
-            #miss_error = self.missclass_error(train_out, self.train_targets)
-            #mse_error = self.mse(train_out, self.train_targets)
-            #self.error_history['miss'].append(miss_error)
-            #self.error_history['mse'].append(mse_error)
+            mse_error = self.mse(train_out, self.train_targets)
+            self.sum = train_out
+            self.theta = 0.5
+            out_thres = self.step()
+            miss_error = self.missclass_error(out_thres, self.train_targets)
+            self.error_history['miss'].append(miss_error)
+            self.error_history['mse'].append(mse_error)
 
             #val_out = self.forward_pass(validation_data)
             #self.sum = val_out
@@ -90,14 +91,13 @@ class MLP:
             #val_mse_error = self.mse(val_out, val_targets)
             #self.validation_error_during_train['miss'].append(val_miss_error)
             #self.validation_error_during_train['mse'].append(val_mse_error)
-        self.sum = out
-        print("unthreshed: ")
-        print(self.sum)
-        out = self.step()
-        print('Training Error: ', self.missclass_error(out, targets))
 
-        self.plot_error_history(self.error_history)
-        #self.plot_error_history(self.validation_error_during_train)
+        #self.sum = out
+        #out = self.step()
+        #print('Training Error: ', self.missclass_error(out, targets))
+
+        # self.plot_error_history(self.error_history)
+        # self.plot_error_history(self.validation_error_during_train)
         return out
 
     def forward_pass(self, data):
@@ -135,12 +135,11 @@ class MLP:
 
         if (p_way):
             part1_o = out - targets
+
             #part2_o = ( (1 + self.o_in) * (1 - self.o_in) ) * 0.5
             part2_o = ( (1 + out) * (1 - out) ) * 0.5
             delta_o = part1_o * part2_o  # np.dot(part1_o, part2_o)
 
-
-            #exit()
             v = self.weights[-1].T  # is it v? or something else?
             delta_o = delta_o.T
             h_out = self.alpha_layer_out[0]
@@ -223,6 +222,20 @@ class MLP:
         """
         miss = len(np.where(predictions != targets)[0])
         return float(miss/len(targets))
+
+    def encoder_error(self, predictions, targets):
+        """
+        Calculate percentage of missclassification in an encoder
+        """
+        correct_count = 0
+        total_count = 0
+        for i_r, row_t in enumerate(targets):
+            for i_e, elem_t in enumerate(row_t):
+                total_count += 1
+                if (predictions[i_r][i_e] == targets[i_r][i_e]):
+                    correct_count += 1
+
+        return correct_count, total_count
 
     def mse(self, predictions, targets):
         """
