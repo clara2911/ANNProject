@@ -21,7 +21,17 @@ class DataBase:
         """
         plt.scatter(classA[0,:], classA[1,:], color='cyan', alpha=0.7, s=7)
         plt.scatter(classB[0,:], classB[1,:], color='purple', alpha=0.7, s=7)
-        plt.axis('tight')
+
+        minx = np.min([np.min(classA[0,:]), np.min( classB[0,:])])
+        maxx = np.max([np.max(classA[0, :]), np.min( classB[0, :])])
+        miny = np.min([np.min(classA[1, :]), np.min( classB[1, :])])
+        maxy = np.max([np.max(classA[1, :]), np.min( classB[1, :])])
+        plt.xlim(minx - 0.1, maxx + 0.1)
+        plt.ylim(miny - 0.1, maxy + 0.1)
+        plt.xlabel('$x_1$', fontsize=18)
+        plt.ylabel('$x_2$', fontsize=18)
+        plt.title('Original Data')
+        plt.savefig('Original_Elephant.eps')
         plt.show()
 
 
@@ -83,26 +93,27 @@ class DataBase:
         Then It samples randomly the amount of data according to sampleA and sample B (fractions).
         """
 
+        np.random.seed(100)
         ndata = 100
         mA = [1.0, 0.3]
         sigmaA = 0.2
         mB = [0.0, -0.1]
         sigmaB = 0.3
 
-        classA = np.empty((2, ndata))
-        classB = np.empty((2, ndata))
-        classA[1, :] = np.random.randn(ndata) * sigmaA + mA[1]
-        classA[0, :] = np.hstack((np.random.randn(int(ndata/2)) * sigmaA - mA[0], np.random.randn(int(ndata/2)) * sigmaA + mA[0]))
-        classB[0, :] = np.random.randn(ndata) * sigmaB + mB[0]
-        classB[1, :] = np.random.randn(ndata) * sigmaB + mB[1]
+        classA = np.empty((ndata, 2))
+        classB = np.empty((ndata, 2))
+        classA[:, 1] = np.random.randn(ndata) * sigmaA + mA[1]
+        classA[:, 0] = np.hstack((np.random.randn(int(ndata/2)) * sigmaA - mA[0], np.random.randn(int(ndata/2)) * sigmaA + mA[0]))
+        classB[:, 0] = np.random.randn(ndata) * sigmaB + mB[0]
+        classB[:, 1] = np.random.randn(ndata) * sigmaB + mB[1]
 
-        targetA = np.ones(ndata)
-        targetB = np.ones(ndata)*-1
+        targetA = np.ones((ndata,1))
+        targetB = np.ones((ndata,1))*-1
 
         #sample
         if subsamples: #special case
-            pos_ind = np.where(classA[0, :] > 0)[0]
-            neg_ind = np.where(classA[0, :] < 0)[0]
+            pos_ind = np.where(classA[:, 0] > 0)[0]
+            neg_ind = np.where(classA[:, 0] < 0)[0]
             indA_pos = np.random.choice(pos_ind, int(0.2 * len(pos_ind)), replace=False)
             indA_neg = np.random.choice(neg_ind, int(0.8 * len(neg_ind)), replace=False)
             indA = np.hstack((indA_pos, indA_neg))
@@ -111,19 +122,19 @@ class DataBase:
             indA = np.random.choice(range(len(targetA)), int(sampleA * len(targetA)), replace=False)
             indB = np.random.choice(range(len(targetB)), int(sampleB * len(targetB)), replace=False)
 
-        classA = classA[:, indA]
-        classB = classB[:, indB]
+        classA = classA[indA, :]
+        classB = classB[indB, :]
         targetA = targetA[indA]
         targetB = targetB[indB]
 
-        X = np.hstack((classA, classB))
-        Y = np.hstack((targetA, targetB))
+        X = np.vstack((classA, classB))
+        Y = np.vstack((targetA, targetB))
 
         X, Y = self.shuffle(X, Y)
         if (add_bias):
             X = self.add_bias_to_input(X)
 
-        return X.T, Y.reshape(-1,1)
+        return X, Y
 
     def make_3D_data(self):
         x = np.arange(-5, 5, 0.5)
