@@ -43,7 +43,7 @@ params = {
     "batch_size": N,  # setting it as 1 means sequential learning
     "theta": 0,
     "epsilon": 0.0,  # slack for error during training
-    "epochs": 200,
+    "epochs": 100,
     "act_fun": 'step',
     "m_weights": 0.1,
     "sigma_weights": 0.2,
@@ -81,12 +81,13 @@ def train_test():
         1: 1  # output layer
     }
 
-    # params["theta"] = 0.2 # THIS IS PROBABILITY THRESHOLD OF BELONGINGE TO CLASS 1
+    params["theta"] = 0.  # step threshold
     mlp = MLP(X, Y, NN_structure, **params)
-    out = mlp.train(verbose=verbose)
-    print("predicted: ", out)
-    print("targets: ", Y)
-    # mlp.test(test_X, test_Y)
+    mlp.validation_data = test_X
+    mlp.val_targets = test_Y
+    mlp.train(verbose=verbose)
+
+    mlp.test(test_X, test_Y)
 
 def compare_batch_seq():
     params["batch_size"] = N  # setting it as 1 means sequential learning

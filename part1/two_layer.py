@@ -77,28 +77,27 @@ class MLP:
                 self.backward_pass(data, targets, out)
 
             train_out = self.forward_pass(self.train_data)
+            out_thres = self.step(train_out)
             mse_error = self.mse(train_out, self.train_targets)
-            self.sum = train_out
-            self.theta = 0.5
-            out_thres = self.step()
             miss_error = self.missclass_error(out_thres, self.train_targets)
+            print('o',out_thres)
+            print('t', self.train_targets)
+            print(miss_error)
+
             self.error_history['miss'].append(miss_error)
             self.error_history['mse'].append(mse_error)
 
-            #val_out = self.forward_pass(validation_data)
-            #self.sum = val_out
-            #val_miss_error = self.missclass_error(val_out, val_targets)
-            #val_mse_error = self.mse(val_out, val_targets)
-            #self.validation_error_during_train['miss'].append(val_miss_error)
-            #self.validation_error_during_train['mse'].append(val_mse_error)
+            val_out = self.forward_pass(self.validation_data)
+            val_thres = self.step(val_out)
+            val_mse_error = self.mse(val_out, self.val_targets)
+            val_miss_error = self.missclass_error(val_thres, self.val_targets)
+            self.validation_error_during_train['miss'].append(val_miss_error)
+            self.validation_error_during_train['mse'].append(val_mse_error)
 
-        #self.sum = out
-        #out = self.step()
-        #print('Training Error: ', self.missclass_error(out, targets))
-
-        # self.plot_error_history(self.error_history)
-        # self.plot_error_history(self.validation_error_during_train)
-        return out
+        print(out_thres)
+        print(self.train_targets)
+        self.plot_error_history(self.error_history)
+        self.plot_error_history(self.validation_error_during_train)
 
     def forward_pass(self, data):
         """
@@ -193,10 +192,8 @@ class MLP:
         Test trained ANN
         """
         targets_pred = self.forward_pass(test_data)
-        # TODO: change the output to your liking
-        self.sum = targets_pred
-        targets_pred = self.step()
-        error = self.missclass_error(targets_pred, test_targets)
+        targets_pred_thres = self.step(targets_pred)
+        error = self.missclass_error(targets_pred_thres, test_targets)
 
         print('Test Error: ', error)
         return error
@@ -205,15 +202,17 @@ class MLP:
     def sigmoid_function(self, h_zeta, beta=1.0):
         """
         Compute the sigmoid function given a threshold beta
+        1. / denominator >>> out:[0, 1]  (theta should be 0.5)
+        ( 2. / denominator) - 1 >>> out: [-1, 1]  (theta should be 0.)
         """
         denominator = 1 + np.exp(-beta * h_zeta)
-        return 1. / denominator # 2. / (denominator - 1)  # assignment says 2 / (denom - 1) instead of 1 / denom
+        return ( 2. / denominator) - 1
 
-    def step(self):
+    def step(self, y):
         """
         Set predictions to 1 or -1 depending on threshold theta
         """
-        Y_threshed = np.where(self.sum > self.theta, 1, -1)
+        Y_threshed = np.where(y > self.theta, 1, -1)
         return Y_threshed
 
     def missclass_error(self, predictions, targets):
