@@ -1,0 +1,39 @@
+-3_1_1--------------------------------------------------------
+N = 200
+n = int(N / 2)  # 2 because we have n*2 data
+features = 2  # input vectors / patterns
+
+mA = np.array([ 1.0, 0.5])
+sigmaA = 0.2
+mB = np.array([-1.0, 0.0])
+sigmaB = 0.2
+
+-3_1_2_1------------------------------------------------------
+    params = {
+        "learning_rate": 0.0005,
+        "batch_size": N,
+        "theta": 0,
+        "epsilon": 0.0,  # slack for error during training
+        "epochs": 100,
+        "act_fun": 'step',
+        "m_weights": 0.5,
+        "sigma_weights": 0.5,
+        "nodes": 1,
+        "learn_method": 'perceptron' (and delta rule)
+    }
+
+-3_1_2_1_lr------------------------------------------------------
+      params = {
+          "learning_rate": e,
+          "batch_size": N,
+          "theta": 0,
+          "epsilon": -0.1,  # slack for error during training
+          "epochs": 10,
+          "act_fun": 'step',
+          "m_weights": 0.9,
+          "sigma_weights": 0.9,
+          "nodes": 1,
+          "learn_method": 'perceptron' (and 'delta_rule')
+      }
+
+      training_method = 'batch'  # 'batch' , 'sequential'

@@ -19,19 +19,9 @@ class DataBase:
         """
         This function just plot the data with scatter, raw data, no-boundaries
         """
-        plt.scatter(classA[0,:], classA[1,:], color='cyan', alpha=0.7, s=7)
-        plt.scatter(classB[0,:], classB[1,:], color='purple', alpha=0.7, s=7)
-
-        minx = np.min([np.min(classA[0,:]), np.min( classB[0,:])])
-        maxx = np.max([np.max(classA[0, :]), np.min( classB[0, :])])
-        miny = np.min([np.min(classA[1, :]), np.min( classB[1, :])])
-        maxy = np.max([np.max(classA[1, :]), np.min( classB[1, :])])
-        plt.xlim(minx - 0.1, maxx + 0.1)
-        plt.ylim(miny - 0.1, maxy + 0.1)
-        plt.xlabel('$x_1$', fontsize=18)
-        plt.ylabel('$x_2$', fontsize=18)
-        plt.title('Original Data')
-        plt.savefig('Original_Elephant.eps')
+        plt.scatter(classA[:,0], classA[:,1], color='cyan', alpha=0.7, s=7)
+        plt.scatter(classB[:,0], classB[:,1], color='purple', alpha=0.7, s=7)
+        plt.axis('tight')
         plt.show()
 
 
@@ -93,7 +83,6 @@ class DataBase:
         Then It samples randomly the amount of data according to sampleA and sample B (fractions).
         """
 
-        np.random.seed(100)
         ndata = 100
         mA = [1.0, 0.3]
         sigmaA = 0.2
@@ -156,7 +145,7 @@ class DataBase:
         return patterns, targets
 
     # make one-hot encoding matrix where pos=1 and neg=-1 of length N
-    def one_hot(self, N):
-        X = -1*np.ones([N,N])
-        X[range(N), range(N)] = 1
+    def one_hot(self, N, pos, neg):
+        X = neg*np.ones([N,N])
+        X[range(N), range(N)] = pos
         return X

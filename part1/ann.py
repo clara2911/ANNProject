@@ -235,6 +235,7 @@ class ANN:
                                data=None,
                                plot_intermediate=False, # plot boundary after every epoch True/False
                                title=None, # title for plot
+                               line_titles=None,
                                data_coloring=None, # color data points as targets or predictions
                                origin_grid = False): # plot x=0 and y=0 grid
         """
@@ -291,8 +292,8 @@ class ANN:
         if title:
             ax.set_title(title)
         custom_lines = [Line2D([0], [0], color='b'), Line2D([0], [0], color='r')]
-        ax.legend(custom_lines, ['Perceptron', 'Delta Rule'], frameon=False, loc='lower right')
-        #ax.legend(frameon=False)
+        ax.legend(custom_lines, [line_titles[0], line_titles[1]], frameon=False, loc='upper right')
+        # ax.legend(frameon=False)
         ax.set_xlabel('$x_1$', fontsize=18)
         ax.set_ylabel('$x_2$', fontsize=18)
         plt.savefig('../figures/non_separable_delta_perc.eps')
@@ -305,8 +306,8 @@ class ANN:
         Plot data as classified from the NN and the decision boundary of the weights
         """
         fig, ax = plt.subplots()
-        classA_ind = np.where(self.train_targets > 0)[0]
-        classB_ind = np.where(self.train_targets <= 0)[0]
+        classA_ind = np.where(self.predictions > 0)[0]
+        classB_ind = np.where(self.predictions <= 0)[0]
 
         classA_x1 = np.array([data[i,0] for i in classA_ind])
         classA_x2 = np.array([data[i,1] for i in classA_ind])
@@ -331,7 +332,7 @@ class ANN:
             ax.scatter(classA_x1, classA_x2, color='cyan', alpha=0.7, s=7)
             ax.scatter(classB_x1, classB_x2, color='purple', alpha=0.7, s=7)
 
-        #ax.set_xlim(np.min(self.train_data[:, 0]) - 0.1, np.max(self.train_data[:, 0]) + 0.1)
+        #ax.set_xlim(np.min(x1) - 0.1, np.max(x1) + 0.1)
         #ax.set_ylim(np.min(self.train_data[:, 1]) - 0.1, np.max(self.train_data[:, 1]) + 0.1)
         ax.legend(frameon=False)
         ax.set_xlabel('$x_1$', fontsize=18)
@@ -351,7 +352,7 @@ class ANN:
         """
         x_axis = range(1, len(self.error_history) + 1)
         y_axis = self.error_history
-        plt.scatter(x_axis, y_axis, color='purple', alpha=0.7)
+        plt.scatter(x_axis, y_axis, color='red', alpha=0.7)
         plt.show()
 
     def print_info(self, iteration, error):
