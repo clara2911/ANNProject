@@ -7,7 +7,7 @@ import numpy as np
 
 
 # Data variables
-N = 10
+N = 6
 n = int(N / 2)  # 2 because we have n*2 data
 test_N = 20
 test_n = int(test_N / 2)
@@ -43,7 +43,7 @@ params = {
     "batch_size": N,  # setting it as 1 means sequential learning
     "theta": 0,
     "epsilon": 0.0,  # slack for error during training
-    "epochs": 100,
+    "epochs": 5,
     "act_fun": 'step',
     "test_data": None,
     "test_targets": None,
@@ -79,11 +79,11 @@ def compare_hidden_nodes():
 def train_test():
 
     NN_structure = {
-        0: 10,  # hidden layer
+        0: 3,  # hidden layer
         1: 1  # output layer
     }
 
-    params["theta"] = 0.2 # or 0.5 or .......  # TODO: FIX THIS
+    # params["theta"] = 0.2 # or 0.5 or .......  # TODO: FIX THIS
     mlp = MLP(X, Y, NN_structure, **params)
     out = mlp.train(verbose=verbose)
     print("predicted: ", out)

@@ -77,12 +77,12 @@ class MLP:
                 self.backward_pass(data, targets, out)
 
             train_out = self.forward_pass(self.train_data)
-            self.sum = train_out
-            out_thres = self.step()
-            miss_error = self.missclass_error(out_thres, self.train_targets)
-            mse_error = self.mse(out_thres, self.train_targets)
-            self.error_history['miss'].append(miss_error)
-            self.error_history['mse'].append(mse_error)
+            #self.sum = train_out
+            #out_thres = self.step()
+            #miss_error = self.missclass_error(train_out, self.train_targets)
+            #mse_error = self.mse(train_out, self.train_targets)
+            #self.error_history['miss'].append(miss_error)
+            #self.error_history['mse'].append(mse_error)
 
             #val_out = self.forward_pass(validation_data)
             #self.sum = val_out
@@ -90,7 +90,6 @@ class MLP:
             #val_mse_error = self.mse(val_out, val_targets)
             #self.validation_error_during_train['miss'].append(val_miss_error)
             #self.validation_error_during_train['mse'].append(val_mse_error)
-
         self.sum = out
         print("unthreshed: ")
         print(self.sum)
@@ -112,6 +111,7 @@ class MLP:
         # data: N_batch_size x D + 1
         # weights (input layer): D + 1 x L/M nodes (NEURONS) of layer
         h_in = np.dot(input_of_layer, w_hidden)  # h_zeta: N_batch_size x L/M  (eq 4.4)
+        self.h_in = h_in
 
         h_out = self.sigmoid_function(h_in, beta=self.beta)  # output of layer zeta
 
@@ -121,6 +121,7 @@ class MLP:
         w_kapa = self.weights[-1].T  # Layer k weights (Hidden layer): 1 x M_k current layer's hidden nodes (NEURONS)
 
         o_in = np.dot(h_out, w_kapa)  # (N x L) * (L x M)
+        self.o_in = o_in
 
         out = self.sigmoid_function(o_in, beta=self.beta)  # output of layer k
         return out
@@ -130,17 +131,21 @@ class MLP:
         """
         Calculate the error for all the weights and update them using generalized Delta rule
         """
-        p_way = True
+        p_way = False
 
         if (p_way):
             part1_o = out - targets
+            #part2_o = ( (1 + self.o_in) * (1 - self.o_in) ) * 0.5
             part2_o = ( (1 + out) * (1 - out) ) * 0.5
             delta_o = part1_o * part2_o  # np.dot(part1_o, part2_o)
 
+
+            #exit()
             v = self.weights[-1].T  # is it v? or something else?
             delta_o = delta_o.T
             h_out = self.alpha_layer_out[0]
             part1_h = np.dot(v, delta_o)  # v * delta_o
+            #part2_h = ( (1 + self.h_in) * (1 - self.h_in) ) * 0.5
             part2_h = ( (1 + h_out) * (1 - h_out) ) * 0.5
             part2_h = part2_h.T
             delta_h = part1_h * part2_h  # np.dot(part1_h, part2_h)
@@ -203,7 +208,7 @@ class MLP:
         Compute the sigmoid function given a threshold beta
         """
         denominator = 1 + np.exp(-beta * h_zeta)
-        return 1 / denominator
+        return 1. / denominator # 2. / (denominator - 1)  # assignment says 2 / (denom - 1) instead of 1 / denom
 
     def step(self):
         """
