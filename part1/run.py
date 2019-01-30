@@ -17,41 +17,37 @@ import numpy as np
 # Data variables
 N = 200
 n = int(N / 2)  # 2 because we have n*2 data
-features = 2  # input vectors / patterns
-
-mA = np.array([ -0.3, 0.0]) #np.array([ 1.0, 0.5])
-sigmaA = 0.4#0.2
-mB = np.array([ 0.2, 1.1]) #np.array([-1.0, 0.0])
-sigmaB = 0.4#0.2
-
-linearly_separable = True
-add_bias = True  # add bias to the inputs
-
-plot_data = False
-
 test_N = 50
 test_n = int(test_N / 2)
 
-test_mA = np.array([ 1.0, 0.5])
-test_sigmaA = 0.2
-test_mB = np.array([-1.0, 0.0])
-test_sigmaB = 0.2
+linearly_separable = False
+add_bias = True  # add bias to the inputs
+
+plot_data = False
 
 verbose = True
 
 def main():
     data_base = DataBase()
     if (linearly_separable):
-        X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
-        test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data, add_bias=add_bias)
+        mA = np.array([ 1.0, 0.5])
+        sigmaA = 0.2
+        mB = np.array([-1.0, 0.0])
+        sigmaB = 0.2
     else:
-        X, Y = data_base.non_linear_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
-        test_X, test_Y = data_base.non_linear_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data, add_bias=add_bias)
+        mA = np.array([ -0.3, 0.0])
+        sigmaA = 0.4
+        mB = np.array([ 0.2, 1.1]))
+        sigmaB = 0.4
+    X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
+    test_X, test_Y = data_base.make_data(test_n, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
 
-    # choose one of the 3 experiments
-    compare_perc_delta(X, Y, test_X, test_Y)
+    # choose one of the 4 experiments
+    #compare_perc_delta(X, Y, test_X, test_Y)
     #compare_learning_rate(X,Y)
     #bias_influence(X,Y)
+
+    compare_non_linear()  # Generates specific set of non linearly separable data
 
 def compare_perc_delta(X, Y, test_X=None, test_Y=None):
     """
@@ -115,8 +111,6 @@ def compare_perc_delta(X, Y, test_X=None, test_Y=None):
                                plot_intermediate=False, # plot boundary after every epoch True/False
                                title='Perceptron vs Delta Rule', # title for plot
                                line_titles=line_titles,
-                               data_coloring=None, # color data points as targets or predictions
-                               title=None, # title for plot
                                data_coloring=ann_P.train_targets, # color data points as targets or predictions
                                origin_grid = False)
     error_1 = ann_D.test(test_X, test_Y)
@@ -163,7 +157,7 @@ def compare_learning_rate(X, Y):
     ax.legend()
     plt.show()
 
-def compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=False):
+def compare_non_linear(X, Y, sampleA = 1.0, sampleB=1.0, subsamples=False):
     """
     This program generates the data through non_linear_data function
     and finds the boundary using batch and delta rule
