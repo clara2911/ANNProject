@@ -20,6 +20,8 @@ n = int(N / 2)  # 2 because we have n*2 data
 test_N = 50
 test_n = int(test_N / 2)
 
+features = 2
+
 linearly_separable = False
 add_bias = True  # add bias to the inputs
 
