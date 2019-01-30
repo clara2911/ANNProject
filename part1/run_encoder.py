@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pylab as plt
 from generate_data import DataBase
 from ann import ANN
-from two_layer import MLP
+from two_layer_encoder import MLP
 
 def main():
     # Data variables
