@@ -1,6 +1,7 @@
 import collections
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.lines import Line2D
 from sklearn.metrics import mean_squared_error as sk_mse
 
 class MLP:
@@ -29,7 +30,7 @@ class MLP:
 
         self.train_data, self.train_targets = data, targets
 
-        self.num_of_hidden_layers = len(structure) - 1  # do not consider the output layer as a hidden
+        self.num_of_hidden_layers = 1
         self.weights = self.init_weights(structure)
         self.error_history = {'mse': [], 'miss': []}
 
@@ -37,25 +38,24 @@ class MLP:
     def init_weights(self, structure):
         """
         Initialize weight matrix Features x Neurons
+        For a two layer network
         """
         layers_list = [None] * (self.num_of_hidden_layers + 1)  # +1 is the output layer
 
-        for layer, weights_per_layer in structure.items():
-            if (layer == 0):
-                first_layer_weights = []
-                for node in range(structure[0]):
-                    first_layer_weights.append(np.random.normal(self.m_weights, self.sigma_weights, self.n_features))
-                layers_list[0] = np.array(first_layer_weights)
-            else:
-                w_l = []
-                dim_out_prev_layer = structure[layer-1]
-                for node in range(weights_per_layer):
-                    w_l.append(np.random.normal(self.m_weights, self.sigma_weights, dim_out_prev_layer))
-                layers_list[layer] = np.array(w_l)
-            layers_list[layer] = np.array(layers_list[layer])
+        first_layer_weights = []
+        for node in range(structure[0]):
+            first_layer_weights.append(np.random.normal(self.m_weights, self.sigma_weights, self.n_features))
+        layers_list[0] = np.array(first_layer_weights)
+
+        w_l = []
+        dim_out_prev_layer = structure[0]
+        for node in range(structure[1]):
+            w_l.append(np.random.normal(self.m_weights, self.sigma_weights, dim_out_prev_layer))
+        layers_list[1] = np.array(w_l)
+        # layers_list[1] = np.array(layers_list[layer])
         return np.array(layers_list)
 
-    def train(self, verbose=False, validation=True):
+    def train(self, verbose=False, validation=True, plot_error=False, plot_at_500=False):
         """
         Train neural network
         """
@@ -65,7 +65,6 @@ class MLP:
         self.alpha_layer_out = [None] * self.num_of_hidden_layers  # Output layer is NOT considered a HIDDEN LAYER
 
         for iteration in range(self.epochs):
-            print(iteration)
 
             for i in range(0, self.train_data.shape[0], self.batch_size):  # for every input vector
 
@@ -79,29 +78,48 @@ class MLP:
                 self.backward_pass(data, targets, out)
 
             train_out = self.forward_pass(self.train_data)
-            out_thres = self.sigmoid_function(train_out)
-            mse_error = self.mse(train_out, self.train_targets)
-            miss_error = self.missclass_error(out_thres, self.train_targets)
-            #print('o',out_thres)
-            #print('t', self.train_targets)
-            #print(miss_error)
 
-            self.error_history['miss'].append(miss_error)
+            mse_error, miss_error = self.compute_error(train_out, self.train_targets)
             self.error_history['mse'].append(mse_error)
+            self.error_history['miss'].append(miss_error)
 
             if validation:
                 val_out = self.forward_pass(self.validation_data)
-                val_thres = self.step(val_out)
-                val_mse_error = self.mse(val_out, self.val_targets)
-                val_miss_error = self.missclass_error(val_thres, self.val_targets)
-                self.validation_error_during_train['miss'].append(val_miss_error)
+                val_mse_error, val_miss_error = self.compute_error(val_out, self.val_targets)
                 self.validation_error_during_train['mse'].append(val_mse_error)
+                self.validation_error_during_train['miss'].append(val_miss_error)
 
-        # print(out_thres)
-        # print(self.train_targets)
-        # self.plot_error_history(self.error_history)
-        # self.plot_error_history(self.validation_error_during_train)
-        return out_thres
+            if (plot_at_500 and iteration%500==0):
+
+                n = int(np.sqrt(len(train_out)))
+                x = np.arange(-5, 5.5, 0.5)
+                y = np.arange(-5, 5.5, 0.5)
+                X, Y = np.meshgrid(x, y)
+                Z = train_out.reshape((n,n))
+
+                #plot the objective function
+                ax = plt.axes(projection='3d')
+                ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
+                                cmap='viridis', edgecolor='none')
+                ax.set_title('surface')
+                plt.show()
+
+                if (plot_error):
+                    self.plot_error_history(self.error_history)
+
+        if (plot_error):
+            self.plot_error_history(self.error_history)
+            if validation:
+                self.plot_error_history(self.validation_error_during_train)
+
+        return train_out
+
+    def compute_error(self, out, targets):
+        mse_error = self.mse(out, targets)
+
+        out_thres = self.step(out)
+        miss_error = self.missclass_error(out_thres, targets)
+        return mse_error, miss_error
 
     def forward_pass(self, data):
         """
@@ -137,62 +155,64 @@ class MLP:
         """
         Calculate the error for all the weights and update them using generalized Delta rule
         """
-        p_way = False
+        # compute Output ERROR
+        delta_out_k = (out - targets) * out * (1.0 - out)  # delta_out: N_batch_size x M
+        delta_out_k = delta_out_k.T
 
-        if (p_way):
-            part1_o = out - targets
+        # compute Hidden error
+        w_kapa = self.weights[-1].T  # output layer's weights
+        h_out = self.alpha_layer_out[0]  #
 
-            #part2_o = ( (1 + self.o_in) * (1 - self.o_in) ) * 0.5
-            part2_o = ( (1 + out) * (1 - out) ) * 0.5
-            delta_o = part1_o * part2_o  # np.dot(part1_o, part2_o)
+        part1 = h_out * (1.0 - h_out)  # N x L
+        part2 = np.dot(w_kapa, delta_out_k).T
+        delta_h = part1 * part2
 
-            v = self.weights[-1].T  # is it v? or something else?
-            delta_o = delta_o.T
-            h_out = self.alpha_layer_out[0]
-            part1_h = np.dot(v, delta_o)  # v * delta_o
-            #part2_h = ( (1 + self.h_in) * (1 - self.h_in) ) * 0.5
-            part2_h = ( (1 + h_out) * (1 - h_out) ) * 0.5
-            part2_h = part2_h.T
-            delta_h = part1_h * part2_h  # np.dot(part1_h, part2_h)
+        # UPDATING !!!
+        # update output layer
+        update_out_w = self.learning_rate * np.dot(h_out.T, delta_out_k.T) #[node])
 
-            # delta_h # remove bias line?
+        # update first layer
+        update_w_k = self.learning_rate * np.dot(data.T, delta_h)
 
-            momentum = 0.9
-            part1_dw = np.dot(delta_h, data)  # delta_h * data
-            part2_dw = (1 - momentum)
-            dw = - part1_dw * part2_dw # np.dot(part1_dw, part2_dw)
-            dw = dw * self.learning_rate
+        self.weights[-1] = np.array(self.weights[-1]) - update_out_w.T #+ 0.01*np.array(self.weights[-1])
+        self.weights[0] = np.array(self.weights[0]) - update_w_k.T #+ 0.01*np.array(self.weights[0])
 
-            part1_dv = np.dot(delta_o, h_out)  # delta_o * h_out
-            part2_dv = (1 - momentum)
-            dv = - part1_dv * part2_dv  # np.dot(part1_dv, part2_dv)
-            dv = dv * self.learning_rate
 
-            self.weights[0] = self.weights[0] + dw
-            self.weights[-1] = self.weights[-1] + dv
+    def backward_pass_ignore(self, data, targets, out):
+        """
+        Backward pass impleneted following the assignments pseudocode
+        Currently not in use
+        """
+        part1_o = out - targets
 
-        else:
-            # compute Output ERROR
-            delta_out_k = (out - targets) * out * (1.0 - out)  # delta_out: N_batch_size x M
+        #part2_o = ( (1 + self.o_in) * (1 - self.o_in) ) * 0.5
+        part2_o = ( (1 + out) * (1 - out) ) * 0.5
+        delta_o = part1_o * part2_o  # np.dot(part1_o, part2_o)
 
-            # compute Hidden error
-            w_kapa = self.weights[-1].T
+        v = self.weights[-1].T  # is it v? or something else?
+        delta_o = delta_o.T
+        h_out = self.alpha_layer_out[0]
+        part1_h = np.dot(v, delta_o)  # v * delta_o
+        #part2_h = ( (1 + self.h_in) * (1 - self.h_in) ) * 0.5
+        part2_h = ( (1 + h_out) * (1 - h_out) ) * 0.5
+        part2_h = part2_h.T
+        delta_h = part1_h * part2_h  # np.dot(part1_h, part2_h)
 
-            delta_out_k = delta_out_k.T
-            part1 = self.alpha_layer_out[0] * (1.0 - self.alpha_layer_out[0])  # N x L
-            part2 = np.dot(w_kapa, delta_out_k).T
-            delta_h = part1 * part2
+        # delta_h # remove bias line?
 
-            # UPDATING !!!
-            # update output layer
-            h_out = self.alpha_layer_out[0]
-            update_out_w = self.learning_rate * np.dot(h_out.T, delta_out_k.T) #[node])
-            self.weights[-1] = np.array(self.weights[-1]) - update_out_w.T #+ 0.01*np.array(self.weights[-1])
+        momentum = 0.9
+        part1_dw = np.dot(delta_h, data)  # delta_h * data
+        part2_dw = (1 - momentum)
+        dw = - part1_dw * part2_dw # np.dot(part1_dw, part2_dw)
+        dw = dw * self.learning_rate
 
-            # update first layer
-            update_w_k = self.learning_rate * np.dot(data.T, delta_h)
-            self.weights[0] = np.array(self.weights[0]) - update_w_k.T #+ 0.01*np.array(self.weights[0])
+        part1_dv = np.dot(delta_o, h_out)  # delta_o * h_out
+        part2_dv = (1 - momentum)
+        dv = - part1_dv * part2_dv  # np.dot(part1_dv, part2_dv)
+        dv = dv * self.learning_rate
 
+        self.weights[0] = self.weights[0] + dw
+        self.weights[-1] = self.weights[-1] + dv
 
     def test(self, test_data, test_targets):
         """
@@ -256,15 +276,24 @@ class MLP:
         mse = sk_mse(predictions, targets)
         return mse
 
-    def plot_error_history(self, error_history):
+    def plot_error_history(self, error_history, plot_miss=False):
         """
         Plot the history of the error (show how quickly the NN converges)
         """
-        x_axis_miss = range(1, len(error_history['miss']) + 1)
-        y_axis_miss = error_history['miss']
         x_axis_mse = range(1, len(error_history['mse']) + 1)
         y_axis_mse = error_history['mse']
-        plt.plot(x_axis_miss, y_axis_miss, color='purple', alpha=0.7)
+
+        fig, ax = plt.subplots()
+
+        custom_lines = [Line2D([0], [0], color='purple'), Line2D([0], [0], color='red')]
+        ax.legend(custom_lines, ['missclassification', 'MSE'], frameon=False, loc='upper right')
+        ax.set_title('Error plots')
+
+        if (plot_miss):
+            x_axis_miss = range(1, len(error_history['miss']) + 1)
+            y_axis_miss = error_history['miss']
+            plt.plot(x_axis_miss, y_axis_miss, color='purple', alpha=0.7)
+
         plt.plot(x_axis_mse, y_axis_mse, color='red', alpha=0.7)
         plt.show()
 
