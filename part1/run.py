@@ -157,7 +157,7 @@ def compare_learning_rate(X, Y):
     ax.legend()
     plt.show()
 
-def compare_non_linear(X, Y, sampleA = 1.0, sampleB=1.0, subsamples=False):
+def compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=False):
     """
     This program generates the data through non_linear_data function
     and finds the boundary using batch and delta rule
