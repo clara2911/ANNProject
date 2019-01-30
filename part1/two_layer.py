@@ -55,7 +55,7 @@ class MLP:
         # layers_list[1] = np.array(layers_list[layer])
         return np.array(layers_list)
 
-    def train(self, verbose=False, validation=True, plot_error=False, plot_at_500=False):
+    def train(self, verbose=False, validation=True, plot_error=False, plot_at_500=False, use_best_weights=False):
         """
         Train neural network
         """
@@ -64,6 +64,7 @@ class MLP:
 
         self.alpha_layer_out = [None] * self.num_of_hidden_layers  # Output layer is NOT considered a HIDDEN LAYER
 
+        self.min_train_error = 1.0
         for iteration in range(self.epochs):
 
             for i in range(0, self.train_data.shape[0], self.batch_size):  # for every input vector
@@ -82,6 +83,10 @@ class MLP:
             mse_error, miss_error = self.compute_error(train_out, self.train_targets)
             self.error_history['mse'].append(mse_error)
             self.error_history['miss'].append(miss_error)
+            
+            if (mse_error < self.min_train_error):
+                self.best_weights = self.weights
+                self.min_train_error = mse_error
 
             if validation:
                 val_out = self.forward_pass(self.validation_data)
@@ -107,6 +112,14 @@ class MLP:
                 if (plot_error):
                     self.plot_error_history(self.error_history)
 
+        if (use_best_weights):
+            self.weights = self.best_weights
+            train_out = self.forward_pass(self.train_data)
+
+            mse_error, miss_error = self.compute_error(train_out, self.train_targets)
+            self.error_history['mse'].append(mse_error)
+            self.error_history['miss'].append(miss_error)
+            
         if (plot_error):
             self.plot_error_history(self.error_history)
             if validation:
@@ -231,6 +244,7 @@ class MLP:
         Compute the sigmoid function given a threshold beta
         1. / denominator >>> out:[0, 1]  (theta should be 0.5)
         ( 2. / denominator) - 1 >>> out: [-1, 1]  (theta should be 0.)
+        (( 2. / denominator) - 1 ) * 0.5 >>> out: [-0.5, 0.5]  (theta should be 0.)
         """
         denominator = 1 + np.exp(-beta * h_zeta)
         return ( 2. / denominator) - 1
