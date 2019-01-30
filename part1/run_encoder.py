@@ -13,7 +13,7 @@ from two_layer import MLP
 
 def main():
     # Data variables
-    N = 8
+    N = 2
     data_base = DataBase()
     X = data_base.one_hot(N, 1, -1) #N, pos, neg
     encoder_learn(X)
@@ -69,7 +69,7 @@ def encoder_learn(X):
 
     mlp = MLP(X, X, NN_structure, **params)
     out = mlp.train(verbose=verbose)
-    print("predicted: ", out)
+    # print("predicted: ", out)
     print("targets: ", X)
     mlp.sum = out
     mlp.theta = 0.5
