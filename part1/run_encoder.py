@@ -69,7 +69,7 @@ def encoder_learn(X):
 
     mlp = MLP(X, X, NN_structure, **params)
     out = mlp.train(verbose=verbose)
-    print("predicted: ", out)
+    # print("predicted: ", out)
     print("targets: ", X)
     mlp.sum = out
     mlp.theta = 0.5
