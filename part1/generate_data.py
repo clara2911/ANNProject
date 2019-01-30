@@ -89,20 +89,20 @@ class DataBase:
         mB = [0.0, -0.1]
         sigmaB = 0.3
 
-        classA = np.empty((2, ndata))
-        classB = np.empty((2, ndata))
-        classA[1, :] = np.random.randn(ndata) * sigmaA + mA[1]
-        classA[0, :] = np.hstack((np.random.randn(int(ndata/2)) * sigmaA - mA[0], np.random.randn(int(ndata/2)) * sigmaA + mA[0]))
-        classB[0, :] = np.random.randn(ndata) * sigmaB + mB[0]
-        classB[1, :] = np.random.randn(ndata) * sigmaB + mB[1]
+        classA = np.empty((ndata, 2))
+        classB = np.empty((ndata, 2))
+        classA[:, 1] = np.random.randn(ndata) * sigmaA + mA[1]
+        classA[:, 0] = np.hstack((np.random.randn(int(ndata/2)) * sigmaA - mA[0], np.random.randn(int(ndata/2)) * sigmaA + mA[0]))
+        classB[:, 0] = np.random.randn(ndata) * sigmaB + mB[0]
+        classB[:, 1] = np.random.randn(ndata) * sigmaB + mB[1]
 
-        targetA = np.ones(ndata)
-        targetB = np.ones(ndata)*-1
+        targetA = np.ones((ndata,1))
+        targetB = np.ones((ndata,1))*-1
 
         #sample
         if subsamples: #special case
-            pos_ind = np.where(classA[0, :] > 0)[0]
-            neg_ind = np.where(classA[0, :] < 0)[0]
+            pos_ind = np.where(classA[:, 0] > 0)[0]
+            neg_ind = np.where(classA[:, 0] < 0)[0]
             indA_pos = np.random.choice(pos_ind, int(0.2 * len(pos_ind)), replace=False)
             indA_neg = np.random.choice(neg_ind, int(0.8 * len(neg_ind)), replace=False)
             indA = np.hstack((indA_pos, indA_neg))
@@ -111,36 +111,40 @@ class DataBase:
             indA = np.random.choice(range(len(targetA)), int(sampleA * len(targetA)), replace=False)
             indB = np.random.choice(range(len(targetB)), int(sampleB * len(targetB)), replace=False)
 
-        classA = classA[:, indA]
-        classB = classB[:, indB]
+        classA = classA[indA, :]
+        classB = classB[indB, :]
         targetA = targetA[indA]
         targetB = targetB[indB]
 
-        X = np.hstack((classA, classB))
-        Y = np.hstack((targetA, targetB))
+        X = np.vstack((classA, classB))
+        Y = np.vstack((targetA, targetB))
 
         X, Y = self.shuffle(X, Y)
         if (add_bias):
             X = self.add_bias_to_input(X)
 
-        return X.T, Y.reshape(-1,1)
+        return X, Y
 
-    def make_3D_data(self):
-        x = np.arange(-5, 5, 0.5)
-        y = np.arange(-5, 5, 0.5)
+    def make_3D_data(self, bias = True, plot_data=False):
+        x = np.arange(-5, 5.5, 0.5)
+        y = np.arange(-5, 5.5, 0.5)
         X, Y = np.meshgrid(x, y)
-        Z = np.exp(- X.dot(X) * 0.1) * np.exp(- Y.dot(Y) * 0.1) - 0.5
+        Z = np.exp(- X**2 * 0.1) * np.exp(- Y**2 * 0.1) - 0.5
 
         #plot the objective function
-        ax = plt.axes(projection='3d')
-        ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
-                        cmap='viridis', edgecolor='none')
-        ax.set_title('surface')
-        plt.show()
+        if (plot_data):
+            ax = plt.axes(projection='3d')
+            ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
+                            cmap='viridis', edgecolor='none')
+            ax.set_title('surface')
+            plt.show()
 
-        ndata = len(x)*len(X)
+        ndata = len(x)*len(x)
         targets = Z.reshape((ndata, 1))
+        targets = (targets - np.min(targets))/(np.max(targets) - np.min(targets))
         patterns = np.hstack((X.reshape((ndata,1)), Y.reshape((ndata,1))))
+        if bias:
+            patterns = np.hstack((patterns, np.ones((len(targets), 1))*-1))
 
         return patterns, targets
 

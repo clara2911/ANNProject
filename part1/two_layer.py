@@ -124,12 +124,10 @@ class MLP:
             self.plot_error_history(self.error_history)
             if validation:
                 self.plot_error_history(self.validation_error_during_train)
-
         return train_out
 
     def compute_error(self, out, targets):
         mse_error = self.mse(out, targets)
-
         out_thres = self.step(out)
         miss_error = self.missclass_error(out_thres, targets)
         return mse_error, miss_error

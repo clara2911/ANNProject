@@ -8,6 +8,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 from sklearn.metrics import mean_squared_error
+from matplotlib.ticker import FormatStrFormatter
 
 class ANN:
 
@@ -77,7 +78,7 @@ class ANN:
         iteration = 0
         self.int_w = {}
         self.error_history = []
-        while iteration < self.epochs:
+        while True:
             #take a random batch or sequential batch?
             data = self.train_data
             targets = self.train_targets
@@ -88,7 +89,7 @@ class ANN:
             delta_w = self.learn(data, targets)
             self.error_history.append(self.error)
 
-            if self.error <= self.epsilon:
+            if self.error <= self.epsilon or iteration > self.epochs:
                 if (verbose):
                     self.print_info(iteration, self.error)
                 break
@@ -266,7 +267,7 @@ class ANN:
         part1 = self.w[0] / self.w[1]
         part2 = self.w[2] / self.w[1]
         x2 = np.array([- part1 * x - self.bias*part2 for x in x1])
-        ax.plot(x1, x2, alpha=0.5, color='red', linewidth=3, label='final decision boundary')
+        ax.plot(x1, x2, alpha=0.5, color='red', linewidth=3, label=self.learning_method)
 
         # if you want to plot multiple ann's and compare them
         if ann_list:
@@ -295,6 +296,7 @@ class ANN:
         # ax.legend(frameon=False)
         ax.set_xlabel('$x_1$', fontsize=18)
         ax.set_ylabel('$x_2$', fontsize=18)
+        plt.savefig('../figures/non_separable_delta_perc.eps')
         plt.show()
         plt.close()
         return
@@ -307,23 +309,23 @@ class ANN:
         classA_ind = np.where(self.predictions > 0)[0]
         classB_ind = np.where(self.predictions <= 0)[0]
 
-        classA_x1 = [data[:,0][i] for i in classA_ind]
-        classA_x2 = [data[:,1][i] for i in classA_ind]
-        classB_x1 = [data[:,0][i] for i in classB_ind]
-        classB_x2 = [data[:,1][i] for i in classB_ind]
+        classA_x1 = np.array([data[i,0] for i in classA_ind])
+        classA_x2 = np.array([data[i,1] for i in classA_ind])
+        classB_x1 = np.array([data[i,0] for i in classB_ind])
+        classB_x2 = np.array([data[i,1] for i in classB_ind])
 
         # decision_boundary
         x1 = data[:, 0]
         part1 = self.w[0] / self.w[1]
         part2 = self.w[2] / self.w[1]
-        x2 = np.array([- part1 * x + part2 for x in x1])
+        x2 = np.array([- part1 * x - self.bias*part2 for x in x1])
         ax.plot(x1, x2, '--', alpha=0.5, label = self.learn_method)
 
         if ann_list:
             for ann in ann_list:
                 part1 = ann.w[0] / ann.w[1]
                 part2 = ann.w[2] / ann.w[1]
-                x2 = np.array([- part1 * x - part2 for x in x1])
+                x2 = np.array([- part1 * x - self.bias*part2 for x in x1])
                 ax.plot(x1, x2, '--', alpha=0.5, label=ann.learn_method)
 
         if scatter:
@@ -337,9 +339,11 @@ class ANN:
         ax.set_ylabel('$x_2$', fontsize=18)
         ax.set_title(title)
         words_title = title.split(' ')
-        plt.savefig('figures/3_1_3_{}_{}.eps'.format(words_title[0], words_title[5]))
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+        plt.savefig('../figures/3_1_3_{}_{}.eps'.format(words_title[0], words_title[5]))
         plt.show()
         plt.close()
+        print('Final error: {}'.format(self.error))
         return
 
     def plot_error_history(self):

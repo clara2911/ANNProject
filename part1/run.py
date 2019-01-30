@@ -19,10 +19,10 @@ N = 200
 n = int(N / 2)  # 2 because we have n*2 data
 features = 2  # input vectors / patterns
 
-mA = np.array([ 1.0, 0.5])
-sigmaA = 0.2
-mB = np.array([-1.0, 0.0])
-sigmaB = 0.2
+mA = np.array([ -0.3, 0.0]) #np.array([ 1.0, 0.5])
+sigmaA = 0.4#0.2
+mB = np.array([ 0.2, 1.1]) #np.array([-1.0, 0.0])
+sigmaB = 0.4#0.2
 
 linearly_separable = True
 add_bias = True  # add bias to the inputs
@@ -49,11 +49,11 @@ def main():
         test_X, test_Y = data_base.non_linear_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data, add_bias=add_bias)
 
     # choose one of the 3 experiments
-    # compare_perc_delta(X, Y, test_X, test_Y)
-    # compare_learning_rate(X,Y)
+    compare_perc_delta(X, Y, test_X, test_Y)
+    #compare_learning_rate(X,Y)
     #bias_influence(X,Y)
 
-def compare_perc_delta(X, Y, test_X, test_Y):
+def compare_perc_delta(X, Y, test_X=None, test_Y=None):
     """
     COMPARISON BETWEEN PERCEPTRON AND DELTA RULE USING BATCH
     :param X: the input data (N (number of inputs) x M (number of features before bias)
@@ -116,9 +116,12 @@ def compare_perc_delta(X, Y, test_X, test_Y):
                                title='Perceptron vs Delta Rule', # title for plot
                                line_titles=line_titles,
                                data_coloring=None, # color data points as targets or predictions
+                               title=None, # title for plot
+                               data_coloring=ann_P.train_targets, # color data points as targets or predictions
                                origin_grid = False)
-    #error_1 = ann_D.test(test_X, test_Y)
-    #error_2 = ann_P.test(test_X, test_Y)
+    error_1 = ann_D.test(test_X, test_Y)
+    error_2 = ann_P.test(test_X, test_Y)
+
 
 def compare_learning_rate(X, Y):
     """
@@ -171,7 +174,8 @@ def compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=False):
         special sample to cover part 4 of question 3.1.3
     :return: plot of the decision boundary
     """
-    X, Y = data_base.non_linear_data(sampleA=sampleA, sampleB=sampleB, subsamples=subsamples)
+    data_base = DataBase()
+    X, Y = data_base.non_linear_data(sampleA=sampleA, sampleB=sampleB, subsamples=subsamples, add_bias=True)
     mask = np.where(Y == 1)[0]
     mask2 = np.where(Y == -1)[0]
     data_base.plot_data(classA=X[mask,:].T, classB=X[mask2,:].T)
@@ -180,7 +184,7 @@ def compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=False):
         "batch_size": 6,
         "theta": 0,
         "epsilon": 0.0,  # slack for error during training
-        "epochs": 100,
+        "epochs": 300,
         "act_fun": 'step',
         "test_data": None,
         "test_targets": None,
@@ -190,18 +194,37 @@ def compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=False):
         "learn_method": 'delta_rule'
     }
 
-    training_method = 'sequential'  # 'batch' , 'sequential'
+    training_method = 'batch'
 
     ann = ANN(X, Y, **params)
 
     ann.train(training_method, verbose=verbose)
 
     if subsamples:
-        title = '20% from classA(1,:)<0 and 80% from classA(1,:)>0'
+        title = '80% from classA(1,:)<0 and 20% from classA(1,:)>0'
     else:
         title = '{}% from class A and {}% from class B'.format(sampleA*100, sampleB*100)
     ann.plot_decision_boundary_general(scatter = True, data=ann.train_data, targets=ann.train_targets, title=title)
 
+    #compute sensitivity and specificity
+    targets = ann.train_targets
+    estimations = ann.predictions
+    TP = 0.0
+    FN = 0.0
+    TN = 0.0
+    FP = 0.0
+    for i in range(len(ann.predictions)):
+        if targets[i] == 1 and estimations[i] == 1:
+            TP += 1.0
+        elif targets[i] == 1 and estimations[i] == -1:
+            FN += 1.0
+        elif targets[i] == -1 and estimations[i] == 1:
+            FP += 1.0
+        else:
+            TN += 1.0
+    TPR = TP / (FN + TP)
+    TNR = TN / (FP + TN)
+    print('TPR: {} and TNR: {}'.format(TPR, TNR))
 
 def bias_influence(X,Y):
     '''
