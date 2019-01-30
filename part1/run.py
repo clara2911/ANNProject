@@ -24,6 +24,7 @@ sigmaA = 0.2
 mB = np.array([-1.0, 0.0])
 sigmaB = 0.2
 
+linearly_separable = True
 add_bias = True  # add bias to the inputs
 
 plot_data = False
@@ -40,12 +41,16 @@ verbose = True
 
 def main():
     data_base = DataBase()
-    X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
-    test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data, add_bias=add_bias)
+    if (linearly_separable):
+        X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
+        test_X, test_Y = data_base.make_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data, add_bias=add_bias)
+    else:
+        X, Y = data_base.non_linear_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
+        test_X, test_Y = data_base.non_linear_data(test_n, features, test_mA, test_mB, test_sigmaA, test_sigmaB, plot=plot_data, add_bias=add_bias)
 
     # choose one of the 3 experiments
-    compare_perc_delta(X, Y, test_X, test_Y)
-    #compare_learning_rate(X,Y)
+    # compare_perc_delta(X, Y, test_X, test_Y)
+    # compare_learning_rate(X,Y)
     #bias_influence(X,Y)
 
 def compare_perc_delta(X, Y, test_X, test_Y):
@@ -63,21 +68,20 @@ def compare_perc_delta(X, Y, test_X, test_Y):
 
     params = {
         "learning_rate": 0.001,
-        "batch_size": 6,
+        "batch_size": N,
         "theta": 0,
         "epsilon": 0.0,  # slack for error during training
-        "epochs": 200,
+        "epochs": 100,
         "act_fun": 'step',
-        "test_data": None,
-        "test_targets": None,
-        "m_weights": 0.1,
-        "sigma_weights": 0.2,
+        "m_weights": 0.5,
+        "sigma_weights": 0.5,
         "nodes": 1,
         "learn_method": 'perceptron'
     }
 
-    training_method = 'sequential'  # 'batch' , 'sequential'
+    training_method = 'batch'  # 'batch' , 'sequential'
 
+    line_titles = ['Intermediate Boundaries', 'Final Boundary']
     #perceptron
     ann_P = ANN(X, Y, **params)
     ann_P.train(training_method, verbose=verbose)
@@ -85,10 +89,11 @@ def compare_perc_delta(X, Y, test_X, test_Y):
                                ann_list = None, # list of different models to compare
                                data=ann_P.train_data,
                                plot_intermediate=True, # plot boundary after every epoch True/False
-                               title=None, # title for plot
+                               title='Perceptron Decision Boundary', # title for plot
+                               line_titles=line_titles,
                                data_coloring=None, # color data points as targets or predictions
                                origin_grid = False)
-    ann_P.test(test_X, test_Y)
+    #ann_P.test(test_X, test_Y)
 
     #delta rule
     params['learn_method'] = 'delta_rule'
@@ -98,24 +103,23 @@ def compare_perc_delta(X, Y, test_X, test_Y):
                                ann_list = None, # list of different models to compare
                                data=ann_D.train_data,
                                plot_intermediate=True, # plot boundary after every epoch True/False
-                               title=None, # title for plot
+                               title='Delta Rule Decision Boundary', # title for plot
+                               line_titles=line_titles,
                                data_coloring=None, # color data points as targets or predictions
                                origin_grid = False)
 
+    line_titles = ['Delta Rule', 'Perceptron']
     ann_P.plot_decision_boundary(scatter = True, # scatter data points: True/False
                                ann_list = [ann_D], # list of different models to compare
                                data=ann_P.train_data,
                                plot_intermediate=False, # plot boundary after every epoch True/False
-                               title=None, # title for plot
+                               title='Perceptron vs Delta Rule', # title for plot
+                               line_titles=line_titles,
                                data_coloring=None, # color data points as targets or predictions
                                origin_grid = False)
-    error_1 = ann_D.test(test_X, test_Y)
-    error_2 = ann_P.test(test_X, test_Y)
+    #error_1 = ann_D.test(test_X, test_Y)
+    #error_2 = ann_P.test(test_X, test_Y)
 
-
-
-# COMPARISON BETWEEN PERCEPTRON AND DELTA RULE RESPECT LEARNING RATE =================================
-# ANN parameters
 def compare_learning_rate(X, Y):
     """
     This function studies the convergence while varying the learning rate
@@ -134,17 +138,15 @@ def compare_learning_rate(X, Y):
     for e in eta:
         params = {
             "learning_rate": e,
-            "batch_size": 6,
+            "batch_size": N,
             "theta": 0,
-            "epsilon": 0.0,  # slack for error during training
-            "epochs": 100,
+            "epsilon": -0.1,  # slack for error during training
+            "epochs": 10,
             "act_fun": 'step',
-            "test_data": None,
-            "test_targets": None,
-            "m_weights": 0,
-            "sigma_weights": 0.5,
+            "m_weights": 0.9,
+            "sigma_weights": 0.9,
             "nodes": 1,
-            "learn_method": 'perceptron' #'delta_rule'
+            "learn_method": 'delta_rule' #'delta_rule'
         }
 
         training_method = 'sequential'  # 'batch' , 'sequential'
