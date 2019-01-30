@@ -11,17 +11,14 @@ class MLP:
         Initialize Neural Network with data and parameters
         """
         var_defaults = {
-            "learning_rate": 0.5,
+            "learning_rate": 0.01,
             "batch_size": 1,
             "theta": 0,
             "epsilon": 0.0,
-            "epochs": 10,
+            "epochs": 100,
             "m_weights": 0.1,
             "sigma_weights": 0.05,
-            "nodes": 1,
-            "error": 1.0,
             "beta": 1.0,
-            "bias": -1
         }
 
         for var, default in var_defaults.items():
@@ -31,7 +28,7 @@ class MLP:
 
         self.train_data, self.train_targets = data, targets
 
-        self.num_of_hidden_layers = len(structure) - 1  # do not consider the output layer as a hidden
+        self.num_of_hidden_layers = 1
         self.weights = self.init_weights(structure)
         self.error_history = {'mse': [], 'miss': []}
 
@@ -39,25 +36,22 @@ class MLP:
     def init_weights(self, structure):
         """
         Initialize weight matrix Features x Neurons
+        For a two layer network
         """
         layers_list = [None] * (self.num_of_hidden_layers + 1)  # +1 is the output layer
 
-        for layer, weights_per_layer in structure.items():
-            if (layer == 0):
-                first_layer_weights = []
-                for node in range(structure[0]):
-                    first_layer_weights.append(np.random.normal(self.m_weights, self.sigma_weights, self.n_features))
-                layers_list[0] = np.array(first_layer_weights)
-            else:
-                w_l = []
-                dim_out_prev_layer = structure[layer-1]
-                for node in range(weights_per_layer):
-                    w_l.append(np.random.normal(self.m_weights, self.sigma_weights, dim_out_prev_layer))
-                layers_list[layer] = np.array(w_l)
+        first_layer_weights = []
+        for node in range(structure[0]):
+            first_layer_weights.append(np.random.normal(self.m_weights, self.sigma_weights, self.n_features))
+        layers_list[0] = np.array(first_layer_weights)
 
-        #self.prev_weights_h = first_layer_weights
-        #self.prev_weights_o = w_l
-        return layers_list
+        w_l = []
+        dim_out_prev_layer = structure[0]
+        for node in range(structure[1]):
+            w_l.append(np.random.normal(self.m_weights, self.sigma_weights, dim_out_prev_layer))
+        layers_list[1] = np.array(w_l)
+        # layers_list[1] = np.array(layers_list[layer])
+        return np.array(layers_list)
 
 
     def train(self, val_data=None, val_targets=None, verbose=False):
@@ -91,10 +85,10 @@ class MLP:
                 self.plot_error_history(self.error_history)
                 return
 
-        print(out, targets)
+        train_out = self.forward_pass(self.train_data)
+        mse_error, miss_error = self.compute_error(train_out, self.train_targets)
+        print("Training error: \n MSE: {} \n Missclassification: {}".format(mse_error, miss_error))
         self.plot_error_history(self.error_history)
-        mse_error, miss_error = self.compute_error(val_out, val_targets)
-        print('Validation Error: ', miss_error)
 
 
     def forward_pass(self, data):
@@ -151,6 +145,41 @@ class MLP:
         #self.prev_weights_h = self.weights[0]
         #self.prev_weights_o = self.weights[-1]
 
+    def backward_pass_ignore(self, data, targets, out):
+        """
+        Backward pass impleneted following the assignments pseudocode
+        Currently not in use
+        """
+        part1_o = out - targets
+
+        #part2_o = ( (1 + self.o_in) * (1 - self.o_in) ) * 0.5
+        part2_o = ( (1 + out) * (1 - out) ) * 0.5
+        delta_o = part1_o * part2_o  # np.dot(part1_o, part2_o)
+
+        v = self.weights[-1].T  # is it v? or something else?
+        delta_o = delta_o.T
+        h_out = self.alpha_layer_out[0]
+        part1_h = np.dot(v, delta_o)  # v * delta_o
+        #part2_h = ( (1 + self.h_in) * (1 - self.h_in) ) * 0.5
+        part2_h = ( (1 + h_out) * (1 - h_out) ) * 0.5
+        part2_h = part2_h.T
+        delta_h = part1_h * part2_h  # np.dot(part1_h, part2_h)
+
+        # delta_h # remove bias line?
+
+        momentum = 0.9
+        part1_dw = np.dot(delta_h, data)  # delta_h * data
+        part2_dw = (1 - momentum)
+        dw = - part1_dw * part2_dw # np.dot(part1_dw, part2_dw)
+        dw = dw * self.learning_rate
+
+        part1_dv = np.dot(delta_o, h_out)  # delta_o * h_out
+        part2_dv = (1 - momentum)
+        dv = - part1_dv * part2_dv  # np.dot(part1_dv, part2_dv)
+        dv = dv * self.learning_rate
+
+        self.weights[0] = self.weights[0] + dw
+        self.weights[-1] = self.weights[-1] + dv
 
     def test(self, test_data, test_targets):
         """
@@ -168,7 +197,7 @@ class MLP:
         Compute the sigmoid function given a threshold beta
         """
         denominator = 1 + np.exp(-beta * h_zeta)
-        return (2. / denominator ) - 1
+        return 1. / denominator
 
 
     def step(self, y):

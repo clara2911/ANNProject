@@ -6,28 +6,18 @@ import matplotlib.pylab as plt
 import numpy as np
 
 sampleA = 1.0
-sampleB=1.0
+sampleB = 1.0
 subsamples=False
 
 N = 200  # Max data is 200
 ndata = int(N/2)  # per class
 
 add_bias = True
-plot_data = True
+plot_data = False
 
 data_base = DataBase()
-#X, Y = data_base.non_linear_data(ndata, sampleA=sampleA, sampleB=sampleB, subsamples=subsamples, add_bias=add_bias, plot=plot_data)
-#test_X, test_Y = data_base.non_linear_data(ndata, sampleA=sampleA, sampleB=sampleB, subsamples=subsamples, add_bias=add_bias, plot=plot_data)
-
-mA = np.array([ 1.0, 0.5])
-sigmaA = 0.2
-mB = np.array([-1.0, 0.0])
-sigmaB = 0.2
-
-features = 2
-
-X, Y = data_base.make_data(ndata, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
-test_X, test_Y = data_base.make_data(ndata, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
+X, Y = data_base.non_linear_data(ndata, sampleA=sampleA, sampleB=sampleB, subsamples=subsamples, add_bias=add_bias, plot=plot_data)
+test_X, test_Y = data_base.non_linear_data(ndata, sampleA=sampleA, sampleB=sampleB, subsamples=subsamples, add_bias=add_bias, plot=plot_data)
 
 verbose = True
 params = {
@@ -35,9 +25,9 @@ params = {
     "batch_size": N,  # setting it as 1 means sequential learning
     "theta": 0,
     "epsilon": 0.0,  # slack for error during training
-    "epochs": 10000,
+    "epochs": 1000,
     "m_weights": 0.0,
-    "sigma_weights": 0.1,
+    "sigma_weights": 0.2,
     "beta": 1
 }
 
@@ -72,16 +62,34 @@ def train_test():
         1: 1  # output layer
     }
 
-    params["theta"] = 0.  # step threshold
+    params["theta"] = 0.5
     mlp = MLP(X, Y, NN_structure, **params)
+
     mlp.train(val_data=test_X, val_targets=test_Y, verbose=verbose)
 
-    mlp.test(test_X, test_Y)
+    plot_meshgrid(mlp, X)
+    # mlp.test(test_X, test_Y)
 
 def compare_batch_seq():
     params["batch_size"] = N  # setting it as 1 means sequential learning
-
+    train_test()
     params["batch_size"] = 1  # setting it as 1 means sequential learning
+    train_test()
+
+
+def plot_meshgrid(mlp, test):
+    xmin, xmax = np.min(test[:, 0]), np.max(test[:, 0])
+    ymin, ymax = np.min(test[:, 1]), np.max(test[:, 1])
+    x = np.linspace(xmin, xmax, 50)
+    y = np.linspace(ymin, ymax, 50)
+    X, Y = np.meshgrid(x, y)
+    fig, ax = plt.subplots()
+    plt.scatter(test[:,0], test[:,1])
+    test = np.hstack((X.ravel().reshape((-1,1)), Y.ravel().reshape((-1,1))))
+    test = np.hstack((test, np.ones((len(Y.ravel()),1))*-1 ))
+    Z = mlp.forward_pass(test).reshape((len(x), len(x)))
+    CS = ax.contour(X, Y, Z)
+    plt.show()
 
 train_test()
 # compare_hidden_nodes()
