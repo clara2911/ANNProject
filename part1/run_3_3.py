@@ -14,12 +14,12 @@ N = 21
 
 # Currently for some reason it works for very specific parameter values
 params = {
-    "learning_rate": 0.01,
+    "learning_rate": 0.001,
     "batch_size": N,  # setting it as 1 means sequential learning
     "epsilon": 0.0,  # slack for error during training
-    "epochs": 2000,
+    "epochs": 5000,
     "act_fun": 'sigmoid',
-    "m_weights": 0.1,
+    "m_weights": 0.0,
     "sigma_weights": 0.2,
     "beta": 1
 }
@@ -27,7 +27,7 @@ params = {
 verbose = 1
 
 NN_structure = {
-    0: 50,  # hidden layer
+    0: 25,  # hidden layer
     1: 1  # output layer
 }
 

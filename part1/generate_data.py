@@ -141,6 +141,7 @@ class DataBase:
 
         ndata = len(x)*len(x)
         targets = Z.reshape((ndata, 1))
+        targets = (targets - np.min(targets))/(np.max(targets) - np.min(targets))
         patterns = np.hstack((X.reshape((ndata,1)), Y.reshape((ndata,1))))
         if bias:
             patterns = np.hstack((patterns, np.ones((len(targets), 1))*-1))

@@ -233,7 +233,7 @@ class MLP:
         ( 2. / denominator) - 1 >>> out: [-1, 1]  (theta should be 0.)
         """
         denominator = 1 + np.exp(-beta * h_zeta)
-        return ( 2. / denominator) - 1
+        return 1. / denominator
 
     def step(self, y):
         """
