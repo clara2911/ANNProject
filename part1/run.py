@@ -39,17 +39,17 @@ def main():
     else:
         mA = np.array([ -0.3, 0.0])
         sigmaA = 0.4
-        mB = np.array([ 0.2, 1.1]))
+        mB = np.array([ 0.2, 1.1])
         sigmaB = 0.4
     X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
     test_X, test_Y = data_base.make_data(test_n, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
 
     # choose one of the 4 experiments
-    #compare_perc_delta(X, Y, test_X, test_Y)
-    #compare_learning_rate(X,Y)
-    #bias_influence(X,Y)
+    compare_perc_delta(X, Y, test_X, test_Y)
+    # compare_learning_rate(X,Y)
+    # bias_influence(X,Y)
 
-    compare_non_linear()  # Generates specific set of non linearly separable data
+     #compare_non_linear()  # Generates specific set of non linearly separable data
 
 def compare_perc_delta(X, Y, test_X=None, test_Y=None):
     """
@@ -170,8 +170,9 @@ def compare_non_linear(sampleA = 1.0, sampleB=1.0, subsamples=False):
         special sample to cover part 4 of question 3.1.3
     :return: plot of the decision boundary
     """
+    ndata = 200
     data_base = DataBase()
-    X, Y = data_base.non_linear_data(sampleA=sampleA, sampleB=sampleB, subsamples=subsamples, add_bias=True)
+    X, Y = data_base.non_linear_data(ndata, sampleA=sampleA, sampleB=sampleB, subsamples=subsamples, add_bias=True)
     mask = np.where(Y == 1)[0]
     mask2 = np.where(Y == -1)[0]
     data_base.plot_data(classA=X[mask,:].T, classB=X[mask2,:].T)
