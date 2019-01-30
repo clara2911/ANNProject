@@ -125,11 +125,11 @@ class DataBase:
 
         return X, Y
 
-    def make_3D_data(self):
-        x = np.arange(-5, 5, 0.5)
-        y = np.arange(-5, 5, 0.5)
+    def make_3D_data(self, bias = True):
+        x = np.arange(-5, 5.5, 0.5)
+        y = np.arange(-5, 5.5, 0.5)
         X, Y = np.meshgrid(x, y)
-        Z = np.exp(- X.dot(X) * 0.1) * np.exp(- Y.dot(Y) * 0.1) - 0.5
+        Z = np.exp(- X**2 * 0.1) * np.exp(- Y**2 * 0.1) - 0.5
 
         #plot the objective function
         ax = plt.axes(projection='3d')
@@ -138,9 +138,11 @@ class DataBase:
         ax.set_title('surface')
         plt.show()
 
-        ndata = len(x)*len(X)
+        ndata = len(x)*len(x)
         targets = Z.reshape((ndata, 1))
         patterns = np.hstack((X.reshape((ndata,1)), Y.reshape((ndata,1))))
+        if bias:
+            patterns = np.hstack((patterns, np.ones((len(targets), 1))*-1))
 
         return patterns, targets
 

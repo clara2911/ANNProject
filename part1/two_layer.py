@@ -52,9 +52,10 @@ class MLP:
                 for node in range(weights_per_layer):
                     w_l.append(np.random.normal(self.m_weights, self.sigma_weights, dim_out_prev_layer))
                 layers_list[layer] = np.array(w_l)
-        return layers_list
+            layers_list[layer] = np.array(layers_list[layer])
+        return np.array(layers_list)
 
-    def train(self, verbose=False):
+    def train(self, verbose=False, validation=True):
         """
         Train neural network
         """
@@ -64,6 +65,7 @@ class MLP:
         self.alpha_layer_out = [None] * self.num_of_hidden_layers  # Output layer is NOT considered a HIDDEN LAYER
 
         for iteration in range(self.epochs):
+            print(iteration)
 
             for i in range(0, self.train_data.shape[0], self.batch_size):  # for every input vector
 
@@ -77,35 +79,38 @@ class MLP:
                 self.backward_pass(data, targets, out)
 
             train_out = self.forward_pass(self.train_data)
-            out_thres = self.step(train_out)
+            out_thres = self.sigmoid_function(train_out)
             mse_error = self.mse(train_out, self.train_targets)
             miss_error = self.missclass_error(out_thres, self.train_targets)
-            print('o',out_thres)
-            print('t', self.train_targets)
-            print(miss_error)
+            #print('o',out_thres)
+            #print('t', self.train_targets)
+            #print(miss_error)
 
             self.error_history['miss'].append(miss_error)
             self.error_history['mse'].append(mse_error)
 
-            val_out = self.forward_pass(self.validation_data)
-            val_thres = self.step(val_out)
-            val_mse_error = self.mse(val_out, self.val_targets)
-            val_miss_error = self.missclass_error(val_thres, self.val_targets)
-            self.validation_error_during_train['miss'].append(val_miss_error)
-            self.validation_error_during_train['mse'].append(val_mse_error)
+            if validation:
+                val_out = self.forward_pass(self.validation_data)
+                val_thres = self.step(val_out)
+                val_mse_error = self.mse(val_out, self.val_targets)
+                val_miss_error = self.missclass_error(val_thres, self.val_targets)
+                self.validation_error_during_train['miss'].append(val_miss_error)
+                self.validation_error_during_train['mse'].append(val_mse_error)
 
-        print(out_thres)
-        print(self.train_targets)
-        self.plot_error_history(self.error_history)
-        self.plot_error_history(self.validation_error_during_train)
+        # print(out_thres)
+        # print(self.train_targets)
+        # self.plot_error_history(self.error_history)
+        # self.plot_error_history(self.validation_error_during_train)
+        return out_thres
 
     def forward_pass(self, data):
         """
         Calculate outputs on weights
         """
+
         # WEIGHTS ARE MATRIX (Different column for every feature?) OR JUST ONE COLUMN PER LAYER?
         input_of_layer = data
-        w_hidden = self.weights[0].T # Shape it so that Features x L/M (Number of nodes (Neurons) of layer)
+        w_hidden = np.array(self.weights[0]).T # Shape it so that Features x L/M (Number of nodes (Neurons) of layer)
 
         # data: N_batch_size x D + 1
         # weights (input layer): D + 1 x L/M nodes (NEURONS) of layer
@@ -117,12 +122,14 @@ class MLP:
         self.alpha_layer_out[0] = h_out  # thresholded output of zeta layer
 
         # OUTPUT LAYER
-        w_kapa = self.weights[-1].T  # Layer k weights (Hidden layer): 1 x M_k current layer's hidden nodes (NEURONS)
+        w_kapa = np.array(self.weights[-1]).T  # Layer k weights (Hidden layer): 1 x M_k current layer's hidden nodes (NEURONS)
 
         o_in = np.dot(h_out, w_kapa)  # (N x L) * (L x M)
         self.o_in = o_in
 
-        out = self.sigmoid_function(o_in, beta=self.beta)  # output of layer k
+
+        out = self.sigmoid_function(o_in, beta=self.beta)
+
         return out
 
 
@@ -180,11 +187,11 @@ class MLP:
             # update output layer
             h_out = self.alpha_layer_out[0]
             update_out_w = self.learning_rate * np.dot(h_out.T, delta_out_k.T) #[node])
-            self.weights[-1] = self.weights[-1] - update_out_w.T
+            self.weights[-1] = np.array(self.weights[-1]) - update_out_w.T #+ 0.01*np.array(self.weights[-1])
 
             # update first layer
             update_w_k = self.learning_rate * np.dot(data.T, delta_h)
-            self.weights[0] = self.weights[0] - update_w_k.T
+            self.weights[0] = np.array(self.weights[0]) - update_w_k.T #+ 0.01*np.array(self.weights[0])
 
 
     def test(self, test_data, test_targets):
@@ -196,7 +203,7 @@ class MLP:
         error = self.missclass_error(targets_pred_thres, test_targets)
 
         print('Test Error: ', error)
-        return error
+        return targets_pred_thres, error
 
 
     def sigmoid_function(self, h_zeta, beta=1.0):
@@ -215,12 +222,18 @@ class MLP:
         Y_threshed = np.where(y > self.theta, 1, -1)
         return Y_threshed
 
+    def linear(self, y):
+        """
+        Linear threshold, f(x) = x (no transformation)
+        """
+        return y
+
     def missclass_error(self, predictions, targets):
         """
         Calculate percentage of missclassification
         """
         miss = len(np.where(predictions != targets)[0])
-        return float(miss/len(targets))
+        return float(float(miss)/len(targets))
 
     def encoder_error(self, predictions, targets):
         """
