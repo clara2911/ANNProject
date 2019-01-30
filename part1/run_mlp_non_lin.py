@@ -1,52 +1,43 @@
 # import local files
 from generate_data import DataBase
 # from mlp import MLP
-from two_layer import MLP
+from two_layer_non_lin import MLP
 import matplotlib.pylab as plt
 import numpy as np
 
+sampleA = 1.0
+sampleB=1.0
+subsamples=False
 
-# Data variables
-N = 10
-n = int(N / 2)  # 2 because we have n*2 data
-test_N = 20
-test_n = int(test_N / 2)
-features = 2  # input vectors / patterns
+N = 200  # Max data is 200
+ndata = int(N/2)  # per class
 
-data_linearly_seperable = True
+add_bias = True
+plot_data = True
 
-# Linearly separable data
+data_base = DataBase()
+#X, Y = data_base.non_linear_data(ndata, sampleA=sampleA, sampleB=sampleB, subsamples=subsamples, add_bias=add_bias, plot=plot_data)
+#test_X, test_Y = data_base.non_linear_data(ndata, sampleA=sampleA, sampleB=sampleB, subsamples=subsamples, add_bias=add_bias, plot=plot_data)
+
 mA = np.array([ 1.0, 0.5])
 sigmaA = 0.2
 mB = np.array([-1.0, 0.0])
 sigmaB = 0.2
-plot_data = False
 
-# Non linearly separable data
-non_mA = [1.0, 0.3]
-non_sigmaA = 0.2
-non_mB = [0.0, -0.1]
-non_sigmaB = 0.3
+features = 2
 
-data_base = DataBase()
-if (data_linearly_seperable):
-    X, Y = data_base.make_data(n, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
-    test_X, test_Y = data_base.make_data(test_n, features, mA, mB, sigmaA, sigmaB, plot=plot_data)
-else:
-    X, Y = data_base.non_linear_data(n, non_mA, non_mB, non_sigmaA, non_sigmaB)
-    test_X, test_Y = data_base.non_linear_data(n, non_mA, non_mB, non_sigmaA, non_sigmaB)
+X, Y = data_base.make_data(ndata, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
+test_X, test_Y = data_base.make_data(ndata, features, mA, mB, sigmaA, sigmaB, plot=plot_data, add_bias=add_bias)
 
-#in here we use batch
 verbose = True
 params = {
-    "learning_rate": 0.1,
+    "learning_rate": 0.01,
     "batch_size": N,  # setting it as 1 means sequential learning
     "theta": 0,
     "epsilon": 0.0,  # slack for error during training
-    "epochs": 100,
-    "act_fun": 'step',
-    "m_weights": 0.1,
-    "sigma_weights": 0.2,
+    "epochs": 10000,
+    "m_weights": 0.0,
+    "sigma_weights": 0.1,
     "beta": 1
 }
 
@@ -83,15 +74,12 @@ def train_test():
 
     params["theta"] = 0.  # step threshold
     mlp = MLP(X, Y, NN_structure, **params)
-    mlp.validation_data = test_X
-    mlp.val_targets = test_Y
-    mlp.train(verbose=verbose)
+    mlp.train(val_data=test_X, val_targets=test_Y, verbose=verbose)
 
     mlp.test(test_X, test_Y)
 
 def compare_batch_seq():
     params["batch_size"] = N  # setting it as 1 means sequential learning
-
 
     params["batch_size"] = 1  # setting it as 1 means sequential learning
 
