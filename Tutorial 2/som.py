@@ -26,21 +26,23 @@ class Som:
         self.num_examples = train_examples.shape[1]
         self.num_feats = train_examples.shape[0]
         self.train_examples = train_examples
+        self.weights = self._init_weights(self.num_nodes, self.num_feats)
 
     def train(self):
         """
         Train the SOM algorithm
         """
-        weights = self.init_weights(self.num_nodes, self.num_feats)
-        # for i in range(self.epochs):
-        #     for j in range(self.num_examples):
-            #     self.similarity_calc(self.train_examples[j], each_node)
-            #     winner_index = self.find_winner(data_vec, weights)
+        for i in range(self.epochs):
+            print("Epoch: ", i)
+            for j in range(self.num_examples):
+                data_vec = self.train_examples[:,j]
+                winner_index = self._find_winner(data_vec)
+                print("winner_index: ", winner_index)
             #     neighbors = self.neighborhood(winner_index)
             #     self.update_weights(neighbors)
             # self.update_neighbor_function(i)
 
-    def init_weights(self, p, q):
+    def _init_weights(self, p, q):
         """
         initialize weight matrix of size pxq with random numbers
         between zero and one.
@@ -50,21 +52,23 @@ class Som:
         print("initialized weights. Shape: ", weights.shape)
         return weights
 
-
-
-    def similarity_calc(self, input, output_weights):
-        """
-        Calculate the similarity between the input pattern and the
-        weights arriving at each output node.
-        """
-        pass
-
-    def _find_winner(self, similarities):
+    def _find_winner(self, train_example):
         """
         Find the most similar node; often referred to as the winner.
+        This is the node with the minimum index to the train_example
+        Return its index
         """
-        # return the index of the winning node
-        pass
+        dists = [self._dist(train_example, weight_i) for weight_i in self.weights]
+        return np.argmin(dists)
+
+    def _dist(self, vec1, vec2):
+        """
+        Calculate the distance between two vectors.
+        Note: square root is left out so it's not real Euclidean dist.
+        """
+        diff = vec1 - vec2
+        distance = np.dot(np.transpose(diff),diff)
+        return distance
 
     def _neighborhood(self, winner, output_grid):
         """

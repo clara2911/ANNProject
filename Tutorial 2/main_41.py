@@ -14,7 +14,7 @@ def main():
     animal_feats, animal_names = generate_data.animal_data(verbose=True)
 
     params = {
-        "epochs" : 20,
+        "epochs" : 3,
         "step_size" : 0.2
     }
     som1 = Som(animal_feats, **params)
