@@ -12,7 +12,7 @@ class RBF_Net:
 
     RBF_Layer = []
 
-    method = {
+    learning_method = {
         'least_squares' : self.lstsq(),
         'delta_rule' : self.delta_rule()
     }
@@ -46,6 +46,9 @@ class RBF_Net:
             rbf_out[i] = self.transfer_function(train_X, node.mu, node.sigma)
 
         # Backward pass
+        algorithm = learning_method[method]
+        algorithm.update(train_X, train_Y)
+
 
     def calculate_out(self, rbf_out):
         """
@@ -69,7 +72,7 @@ class RBF_Net:
         """
         A class containing all the necessary functions for the Least Squares Solution method
         """
-        def train(self, train_X, train_Y):
+        def update(self, train_X, train_Y):
             """
             Update the weights using batch learning and the least square solution
             """
@@ -104,7 +107,7 @@ class RBF_Net:
         """
         A class containing all the necessary functions for the delta rule method
         """
-        def train(self, train_X, train_Y):
+        def update(self, train_X, train_Y):
             """
             Update the weights using sequential (online) learning and delta rule
             """
