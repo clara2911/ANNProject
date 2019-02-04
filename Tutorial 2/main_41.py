@@ -21,9 +21,9 @@ def main():
     # Eg put feat_lim=[2,29] to only use 'barks' and 'flying' or set examples_lim=[0] to only consider the antelope
     animal_feats, animal_names = generate_data.animal_data(verbose=True, feat_lim=None, examples_lim=None)
     params = {
-        "epochs" : 20,
+        "epochs" : 50,
         "step_size" : 0.2,
-        "num_nodes": 100
+        "num_nodes": [100]
     }
     som1 = Som(animal_feats, **params)
     som1.train()
@@ -31,7 +31,8 @@ def main():
     sorted_feats, sorted_names = som1.order(pos, animal_feats, animal_names)
     print("animal names in order: ")
     print(sorted_names)
-    plot.plot_order_1d(pos, animal_names)
+    plot.plot_ordering_1d(pos, animal_names)
+    # plot.plot_ordering_2d(pos, animal_names)
 
 if __name__ == "__main__":
     main()
