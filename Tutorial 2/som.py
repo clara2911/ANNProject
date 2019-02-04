@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 """
-Main file for assignment 4.1
+Implements the SOM algorithm
+functions
+init: initializes a som object with given train examples
+train: trains the som algorithm using the train examples
+apply: returns a position array with the ordering for the given examples
+order: orders a given set of examples using the position array
 Topological Ordering of Animal Species
 
 Authors: Kostis SZ, Romina Ariazza and Clara Tump
@@ -39,13 +44,46 @@ class Som:
         """
         #Todo: shuffle data points ?
         for i in range(self.epochs):
-            print("Epoch: ", i)
             self._compute_neighborhood_size(i)
             for j in range(self.num_examples):
                 data_vec = self.train_examples[:,j]
                 winner_index = self._find_winner(data_vec)
                 neighborhood_indices = self._find_neighbors(winner_index)
                 self._update_weights(data_vec, neighborhood_indices)
+
+    def apply(self, apply_examples):
+        """
+        Returns an array with the positions of each given example in apply_examples
+        """
+        # Todo: generalize to multiple-D
+        num_examples = apply_examples.shape[-1]
+        pos = np.zeros(num_examples, dtype=int)
+        for i in range(num_examples):
+            data_vec = apply_examples[:, i]
+            winner_index = self._find_winner(data_vec)
+            pos[i] = winner_index
+        return pos
+
+    def order(self, pos, apply_examples, names):
+        """
+        returns the feature array apply_examples and the list of names sorted by the pos array
+        """
+        info_tuples = []
+        num_examples = apply_examples.shape[-1]
+        for i in range(num_examples):
+            info_tuples.append((pos[i], apply_examples[:,i], names[i]))
+        sorted_pos = sorted(info_tuples, key=self._take_first)
+        sorted_data = np.column_stack([x[-2] for x in sorted_pos])
+        sorted_names = np.array([x[-1] for x in sorted_pos], dtype=str)
+        return sorted_data, sorted_names
+
+
+    def _take_first(self, elem):
+        """
+        method needed for sorting by the first element of a tuple
+        """
+        return elem[0]
+
 
 
     def _init_weights(self, p, q):
@@ -55,15 +93,17 @@ class Som:
         between zero and one.
         """
         weights = np.random.rand(p, q)
-        print("initialized weights. Shape: ", weights.shape)
         return weights
 
     def _init_neighborhood_size(self, shape_weights):
-        neighborhood_size = np.zeros(len(shape_weights)-1)
+        """
+        initializes the neighborhood size. Initial value: half of the number of examples
+        """
+        neighborhood_size = np.zeros(len(shape_weights)-1, dtype=int)
         for i in range(len(shape_weights[:-1])):
             dim_len = shape_weights[i]
             neighborhood_size[i] = dim_len / 2
-        return neighborhood_size.astype(int)
+        return neighborhood_size
 
 
     def _find_winner(self, train_example):
