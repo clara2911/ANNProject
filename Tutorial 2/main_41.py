@@ -23,16 +23,16 @@ def main():
     params = {
         "epochs" : 50,
         "step_size" : 0.2,
-        "num_nodes": [100]
+        "num_nodes": [10,10]
     }
     som1 = Som(animal_feats, **params)
     som1.train()
     pos = som1.apply(animal_feats)
-    sorted_feats, sorted_names = som1.order(pos, animal_feats, animal_names)
-    print("animal names in order: ")
-    print(sorted_names)
-    plot.plot_ordering_1d(pos, animal_names)
-    # plot.plot_ordering_2d(pos, animal_names)
+    # sorted_feats, sorted_names = som1.order(pos, animal_feats, animal_names)
+    # print("animal names in order: ")
+    # print(sorted_names)
+    # plot.plot_ordering_1d(pos, animal_names)
+    plot.plot_ordering_2d(pos, animal_names)
 
 if __name__ == "__main__":
     main()
