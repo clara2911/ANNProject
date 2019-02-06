@@ -8,6 +8,7 @@ Authors: Kostis SZ, Romina Ariazza and Clara Tump
 import numpy as np
 import generate_data
 from ann import ANN
+import plotter
 
 verbose = True
 
@@ -30,10 +31,10 @@ def part_3_2():
 
 
 def add_noise_to_data(data):
-    data.train_sin_x = generate_data.add_noise(data.train_sin_x)
-    data.train_sin_y = generate_data.add_noise(data.train_sin_y)
-    data.test_sin_x = generate_data.add_noise(data.test_sin_x)
-    data.test_sin_y = generate_data.add_noise(data.test_sin_y)
+    data.train_X = generate_data.add_noise(data.train_X)
+    data.train_Y = generate_data.add_noise(data.train_Y)
+    data.test_X = generate_data.add_noise(data.test_X)
+    data.test_Y = generate_data.add_noise(data.test_Y)
     return data
 
 
@@ -42,8 +43,6 @@ def compare_to_ann():
     Regression problem on two functions (sin, square) with added noise
     using batch learning with a 2 layer neural network
     """
-    method = 'delta_rule'
-    network_size = 50
 
     sin, square = generate_data.sin_square(verbose=verbose)
     sin = add_noise_to_data(sin)
@@ -51,9 +50,12 @@ def compare_to_ann():
 
     ann = ANN()
 
-    ann.solve(sin.train_X, sin.train_Y, sin.test_X, sin.test_Y)
+    y_pred = ann.solve(sin.train_X, sin.train_Y, sin.test_X, sin.test_Y)
+
+    plotter.plot_2d_function(sin.train_X, sin.train_Y, y_pred=sin.test_Y)
+
 
 
 if __name__ == "__main__":
-    part_3_2()
+    # part_3_2()
     compare_to_ann()

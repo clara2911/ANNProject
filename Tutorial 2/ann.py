@@ -14,27 +14,26 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, History
 
 class ANN:
 
-    batch_size = 100
-    hidden_neurons = 10
-    output_neurons = 1
-
-
     def __init__(self):
         """
         Initialize NN settings
         """
-
+        self.batch_size = 10
+        self.hidden_neurons = 10
+        self.output_neurons = 1
 
 
     def solve(self, train_X, train_Y, test_X, test_Y):
         """
         Initialize NN, train and test
         """
-        model = setup_model(train_X)
+        model = self.setup_model(train_X)
 
-        trained_model = train(model, train_X, train_Y)
+        trained_model = self.train(model, train_X, train_Y)
 
-        y_pred = test(trained_model, test_X, test_Y)
+        y_pred = self.test(trained_model, test_X, test_Y)
+
+        return y_pred
 
 
     def setup_model(self, train_X):
@@ -42,10 +41,10 @@ class ANN:
         Initialize model with parameters
         """
 
-        input_dims = train_X.shape[0]
+        input_dims = 1
         model = Sequential()
-        model.add(Dense(hidden_neurons, activation='relu', input_shape=(input_dims,)), kernel_regularizer=regularizers.l2(0.01))
-        model.add(Dense(output_neurons, activation='linear'), kernel_regularizer=regularizers.l2(0.01))
+        model.add(Dense(self.hidden_neurons, activation='relu', input_shape=(input_dims,)))
+        model.add(Dense(self.output_neurons, activation='linear'))
 
         sgd = optimizers.Adam(lr=0.01)
         model.compile(loss='mean_squared_error', optimizer=sgd, metrics=['accuracy'])
@@ -62,7 +61,7 @@ class ANN:
         callbacks = [history, ModelCheckpoint(filepath='best_model.h5', monitor='val_loss', save_best_only=True, mode='auto')]
 
         # Train
-        model.fit(train_X, train_Y, epochs=5000, batch_size=batch_size, verbose=1, callbacks=callbacks)
+        model.fit(train_X, train_Y, epochs=5000, batch_size=self.batch_size, verbose=1, callbacks=callbacks)
         return model
 
 
@@ -70,7 +69,7 @@ class ANN:
         """
         Test NN on unseen data
         """
-        loss_and_metrics = model.evaluate(test_X, test_Y, batch_size=batch_size)
+        loss_and_metrics = model.evaluate(test_X, test_Y, batch_size=self.batch_size)
         # Predict
-        test_Y = model.predict(test_X, batch_size=batch_size, verbose=0, steps=None)
+        test_Y = model.predict(test_X, batch_size=self.batch_size, verbose=0, steps=None)
         return test_Y
