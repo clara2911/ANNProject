@@ -85,6 +85,7 @@ class RBF_Net:
             N = train_X.shape[0]  # Number of data points
             n = len(RBF_Layer)  # Number of nodes
             if (N > n):  # Number of data points should always be lower or equal to number of nodes
+                print("System overdetermined. Cannot solve it using least squares.")
                 return 0
 
             y_pred = np.linalg.lstsq(r, train_Y, rcond=None)

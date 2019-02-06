@@ -7,7 +7,7 @@ Authors: Kostis SZ, Romina Ariazza and Clara Tump
 """
 import numpy as np
 import generate_data
-from rbf_NN import RBF_Net
+from ann import ANN
 
 verbose = True
 
@@ -37,5 +37,23 @@ def add_noise_to_data(data):
     return data
 
 
+def compare_to_ann():
+    """
+    Regression problem on two functions (sin, square) with added noise
+    using batch learning with a 2 layer neural network
+    """
+    method = 'delta_rule'
+    network_size = 50
+
+    sin, square = generate_data.sin_square(verbose=verbose)
+    sin = add_noise_to_data(sin)
+    square = add_noise_to_data(square)
+
+    ann = ANN()
+
+    ann.solve(sin.train_X, sin.train_Y, sin.test_X, sin.test_Y)
+
+
 if __name__ == "__main__":
     part_3_2()
+    compare_to_ann()
