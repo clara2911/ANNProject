@@ -19,15 +19,15 @@ def part_3_1():
     batch learning with least squares
     """
     method = 'least_squares'
-    network_size = 50  # number of RBF nodes in the network
+    network_size = 100 # number of RBF nodes in the network #NOTE: larger than sample size
 
     sin, square = generate_data.sin_square(verbose=verbose)
 
-    rbf_net = RBF_Net(network_size)
+    rbf_net = RBF_Net(network_size, sin.train_X)
 
-    rbf_net.train(sin.train_X, sin.train_Y, method)
+    y_pred = rbf_net.train(sin.train_X, sin.train_Y, method)
 
-    # plotter.plot_2d_function(sin.train_X, sin.train_Y, y_pred=sin.test_Y)
+    plotter.plot_2d_function(sin.train_X, sin.train_Y, y_pred=y_pred)
 
 
 if __name__ == "__main__":
