@@ -14,9 +14,9 @@ def plot_ordering_1d(pos, animal_names):
     plots the animal_names on a 1-D line ordered by a topological ordering supplied by the array pos
     """
     fig, ax = plt.subplots(1)
-    ax.scatter(pos,np.zeros(len(pos)), s=1, color='purple')
+    ax.scatter(np.zeros(len(pos)), pos, s=1, color='purple')
     for i, name in enumerate(animal_names):
-        ax.annotate(name, (pos[i], 0), rotation=45, fontsize=8, color='blue')
+        ax.annotate(name, (0, pos[i]), rotation=0, fontsize=8, color='blue')
     ax.set_yticklabels([])
     ax.set_xticklabels([])
     ax.set_title("Topological Ordering of Animal Species")
