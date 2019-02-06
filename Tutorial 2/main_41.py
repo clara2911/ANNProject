@@ -23,7 +23,8 @@ def main():
     params = {
         "epochs" : 20,
         "step_size" : 0.2,
-        "num_nodes": [100]
+        "num_nodes": [100],
+        "neighborhood_type": 'linear'
     }
     som1 = Som(animal_feats, **params)
     som1.train()

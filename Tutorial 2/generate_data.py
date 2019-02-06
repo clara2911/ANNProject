@@ -36,3 +36,26 @@ def animal_data(verbose=False, feat_lim=None, examples_lim=None):
         print("shape animal data: ", animal_feats.shape)
         print("shape animal names: ", animal_names.shape)
     return animal_feats, animal_names
+
+def city_coords(verbose=False, feat_lim = None, examples_lim = None):
+    city_coords = np.loadtxt('data/cities.dat', dtype=float, delimiter=',')
+    city_names = np.loadtxt('data/city_names.txt', dtype=str)
+    city_coords = np.transpose(city_coords)
+    if feat_lim:
+        if type(feat_lim) == int:
+            city_coords = city_coords[:feat_lim, :]
+        elif isinstance(feat_lim, list):
+            city_coords = city_coords[feat_lim]
+    if examples_lim:
+        if type(examples_lim) == int:
+            city_coords = city_coords[:,:examples_lim]
+            city_names = city_names[:examples_lim]
+        elif isinstance(examples_lim, list):
+            city_coords = city_coords[:, examples_lim]
+            city_names = city_names[examples_lim]
+    if verbose:
+        print("city_names: ", city_names)
+        print("city_coords shape: ", city_coords.shape)
+        print("city coords: ")
+        print(city_coords)
+    return city_coords, city_names
