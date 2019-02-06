@@ -22,7 +22,8 @@ class Som:
         var_defaults = {
             "epochs" : 20,
             "step_size" : 0.2,
-            "num_nodes" : [10,10] # 1-D: eg [100] or 2-D eg [10,10]
+            "num_nodes" : [10,10], # 1-D: eg [100] or 2-D eg [10,10]
+            "neighborhood_type": 'circular'  # ['circular', 'linear']
         }
 
         for var, default in var_defaults.items():
@@ -147,24 +148,40 @@ class Som:
         winner in the output grid. This is called the neighbourhood.
         """
         min_neighbor = winner-self.neighborhood_size[0]
+        max_neighbor = winner+self.neighborhood_size[0]
+
+        if self.neighborhood_type == 'linear':
+            neighbor_indices = self.linear_neighbors(min_neighbor, max_neighbor)
+        elif self.neighborhood_type == 'circular':
+            neighbor_indices = self.circular_neighbors(min_neighbor, max_neighbor)
+        else:
+            exit('INPUT A VALID NEIGHBORHOOD TYPE')
+        return neighbor_indices
+
+    def linear_neighbors(self, min_neighbor, max_neighbor):
         # index shouldn't go below 0
         min_neighbor[min_neighbor < 0] = 0
-        max_neighbor = winner+self.neighborhood_size[0]
-        # index shouldn't go above num_nodes-1
         # Todo: this breaks if the grid is not rectangular
-        max_neighbor[max_neighbor > self.num_nodes[0]] = self.num_nodes[0]-1
+        # index shouldn't go above num_nodes-1
+        max_neighbor[max_neighbor >= self.num_nodes[0]] = self.num_nodes[0] - 1
         # Todo: think of something else instead of this ugly if/elif/else for 1-D and 2-D
         neighbor_indices = []
         if len(self.num_nodes) == 1:
-            for dim1 in range(min_neighbor[0], max_neighbor[0]):
+            for dim1 in range(min_neighbor[0], max_neighbor[0]+1):
                 neighbor_indices.append(np.array([dim1]))
         elif len(self.num_nodes) == 2:
             for dim1 in range(min_neighbor[0], max_neighbor[0]):
-                for dim2 in range(min_neighbor[1], max_neighbor[1]):
+                for dim2 in range(min_neighbor[1], max_neighbor[1]+1):
                     neighbor_indices.append(np.array([dim1, dim2]))
         else:
             exit("Use a 1D or 2D grid!")
         return neighbor_indices
+
+    def circular_neighbors(self, min_neighbor, max_neighbor):
+        # Todo: only works for 1-D now
+        non_circ_neighbor_indices = list(range(min_neighbor[0], max_neighbor[0]+1))
+        circ_neighbor_indices = [np.array(node % self.num_nodes[0]) for node in non_circ_neighbor_indices]
+        return circ_neighbor_indices
 
 
     def _update_weights(self, data_vec, neighborhood_indices):
