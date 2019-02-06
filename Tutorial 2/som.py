@@ -22,7 +22,7 @@ class Som:
         var_defaults = {
             "epochs" : 20,
             "step_size" : 0.2,
-            "num_nodes" : [10,10]
+            "num_nodes" : [10,10] # 1-D: eg [100] or 2-D eg [10,10]
         }
 
         for var, default in var_defaults.items():
@@ -31,7 +31,7 @@ class Som:
         self.num_examples = train_examples.shape[1]
         self.num_feats = train_examples.shape[0]
         self.train_examples = train_examples
-        # Todo: think of something else instead of this ugly poo if/elif/else for 1-D and 2-D
+        # Todo: think of something else instead of this ugly if/elif/else for 1-D and 2-D
         # Todo: Maybe recursion?
         if len(self.num_nodes) == 2:
             self.weights = self._init_weights(self.num_nodes[0], self.num_nodes[1], self.num_feats)
@@ -120,7 +120,7 @@ class Som:
         # if 1 dimension you have to iterate over the first dim of the vector
         # if grid, you have to iterate over the first dim, and then iterate over the second dim
         # and add all distances to dists
-        # Todo: think of something else instead of this ugly poo if/elif/else for 1-D and 2-D
+        # Todo: think of something else instead of this ugly if/elif/else for 1-D and 2-D
         # Todo: Maybe recursion?
         if len(self.num_nodes) == 1:
             dists = np.array([self._dist(train_example, weight_i) for weight_i in self.weights])
@@ -153,7 +153,7 @@ class Som:
         # index shouldn't go above num_nodes-1
         # Todo: this breaks if the grid is not rectangular
         max_neighbor[max_neighbor > self.num_nodes[0]] = self.num_nodes[0]-1
-
+        # Todo: think of something else instead of this ugly if/elif/else for 1-D and 2-D
         neighbor_indices = []
         if len(self.num_nodes) == 1:
             for dim1 in range(min_neighbor[0], max_neighbor[0]):
