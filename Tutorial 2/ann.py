@@ -14,13 +14,14 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, History
 
 class ANN:
 
-    def __init__(self):
+    def __init__(self, epochs, batch_size, hidden_neurons, output_neurons):
         """
         Initialize NN settings
         """
-        self.batch_size = 10
-        self.hidden_neurons = 10
-        self.output_neurons = 1
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.hidden_neurons = hidden_neurons
+        self.output_neurons = output_neurons
 
 
     def solve(self, train_X, train_Y, test_X, test_Y):
@@ -61,7 +62,7 @@ class ANN:
         callbacks = [history, ModelCheckpoint(filepath='best_model.h5', monitor='val_loss', save_best_only=True, mode='auto')]
 
         # Train
-        model.fit(train_X, train_Y, epochs=5000, batch_size=self.batch_size, verbose=1, callbacks=callbacks)
+        model.fit(train_X, train_Y, epochs=self.epochs, batch_size=self.batch_size, verbose=1, callbacks=callbacks)
         return model
 
 

@@ -46,16 +46,6 @@ def sin_square(verbose=False):
     return sin(), square()
 
 
-def add_noise(data):
-    """
-    Add Gaussian noise to a data structure
-    """
-    noise = np.random.normal(0, 0.1, data.shape)  # zero mean, 0.1 std
-    noisy_data = data + noise
-    return noisy_data
-
-
-
 def animal_data(verbose=False):
     """
     Reads in data files for assignment 4.1 Animal Ordering

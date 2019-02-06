@@ -9,9 +9,9 @@ from matplotlib import pyplot as plt
 
 
 def plot_2d_function(x, y, y_pred=None):
-    plt.plot(x, y, color='blue')
+    plt.scatter(x, y, color='blue')
 
     if y_pred is not None:
-        plt.plot(x, y_pred, color='red')
+        plt.scatter(x, y_pred, color='red')
 
     plt.show()
