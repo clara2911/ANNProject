@@ -1,0 +1,84 @@
+antlered	0
+articulations	1
+barks		2
+big		3
+bigears		4
+biting		5
+black		6
+blood		7
+brown		8
+climbing	9
+cns		10
+coldblooded	11
+curltail	12
+digging		13
+eatsanimals	14
+eatsanything	15
+eatscarrion	16
+eatsfish	17
+eatsflies	18
+eatsgarbage	19
+eatsgrass	20
+eggs		21
+eightlegged	22
+exoskeleton	23
+extremelysmall	24
+fatbody		25
+feathers	26
+feelerless	27
+feelers		28
+flying		29
+fourlegged	30
+fourwinged
+fur
+gibbous
+gnawteeth
+green
+grey
+hoofs
+humanlike
+jumping
+landliving
+lightbrown
+lissom
+livingoffspring
+longneck
+longnosed
+medium
+moving
+nervoussystem
+nib
+notflying
+oddtoed
+oxygenconsuming
+pairtoed
+pink
+pipetrakeas	0
+plate		1
+pouch		2
+proboscis	3	
+robust		4
+ruminanting	5
+running		6
+shell		7
+shortnosed	8
+shorttail	9
+sixlegged	10
+small		11
+smellsterrible	12
+spine		13
+tail		14
+thinbody	15
+trakeas		16
+tusked		17
+twolegged	18
+twowinged	19
+warmblooded	20
+waterliving	21	
+verybig		22
+verylongears	23
+verysmall	24
+white		25
+wingless	26
+wings		27
+yellow		28
