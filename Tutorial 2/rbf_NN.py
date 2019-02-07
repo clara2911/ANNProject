@@ -20,7 +20,7 @@ class RBF_Net:
             Initialize random center and std
             """
             self.mu = mu
-            self.sigma = np.random.normal(0, 0.5)
+            self.sigma = 0.5
 
 
     def __init__(self, net_size, train_X):
