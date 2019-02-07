@@ -33,12 +33,6 @@ class RBF_Net:
             'delta_rule' : self.delta_rule
         }
 
-        N = train_X.shape[0]  # Number of data points
-
-        if (N > net_size):  # Number of data points should always be lower or equal to number of nodes
-           print("System overdetermined. Cannot solve it using least squares.")
-           exit()
-
         self.RBF_Layer = []
         # Initialize mu's evenly spaced in the x axis of the data and random sigma's
         mu_step = train_X[-1] / net_size
@@ -131,7 +125,7 @@ class RBF_Net:
         for i in range(f.shape[0]):
             error += f[i] - f_pred[i]
 
-        return (error / f.shape[0])
+        return np.abs(error / f.shape[0])
 
 
     def lstsq(self, phi, f, _):
@@ -139,6 +133,12 @@ class RBF_Net:
         Update the weights using batch learning and the least square solution
         i.e Obtain w which minimizes the system phi.T * f_pred = phi.T * f
         """
+        N = f.shape[0]  # Number of data points
+        n = phi.shape[1]  # Number of nodes
+
+        #if (N > n):  # Number of data points should always be lower or equal to number of nodes
+        #   print("System overdetermined. Cannot solve it using least squares.")
+        #   exit()
 
         pseudo_inv_phi = np.dot(phi.T, phi)
         pseudo_inv_f = np.dot(phi.T, f)
@@ -147,7 +147,6 @@ class RBF_Net:
         # NOTE: This is manually solving the equation (Currently(!) not working correctly)
         # pseudo_inv_phi = np.linalg.inv(pseudo_inv_phi)
         # w = np.dot(pseudo_inv_phi.T, pseudo_inv_f)
-
         return w
 
 
