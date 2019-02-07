@@ -1,0 +1,8 @@
+3.1
+  - it seems that 63 nodes (same number as samples) gives the best results. but not 100% sure
+
+  - in order to get 0% error for the square problem we just need to pass the network output
+  through the same filter as the training data.
+  We still need at least N = n nodes tho (we cannot solve N > n systems with least squares)
+
+  - "What type of applications could this be useful?"
