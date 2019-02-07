@@ -15,7 +15,7 @@ class RBF_Net:
         """
         A class that represents a RBF node
         """
-        def __init__(self, mu):
+        def __init__(self, mu, sigma):
             """
             Initialize random center and std
             """
@@ -23,7 +23,7 @@ class RBF_Net:
             self.sigma = 0.5
 
 
-    def __init__(self, net_size, train_X):
+    def __init__(self, net_size, train_X, sigma=0.5):
         """
         Initialize a RBF Network
         """
@@ -38,7 +38,7 @@ class RBF_Net:
         mu_step = train_X[-1] / net_size
         for i in range(net_size):
             mu_i = i * mu_step
-            self.RBF_Layer.append(self.RBF_node(mu_i))
+            self.RBF_Layer.append(self.RBF_node(mu_i, sigma))
 
         self.weights = None
         self.phi = None
@@ -123,9 +123,9 @@ class RBF_Net:
         """
         error = 0.
         for i in range(f.shape[0]):
-            error += f[i] - f_pred[i]
+            error += np.abs(f[i] - f_pred[i])
 
-        return np.abs(error / f.shape[0])
+        return error / f.shape[0]
 
 
     def lstsq(self, phi, f, _):
@@ -157,15 +157,15 @@ class RBF_Net:
         # Initialize weights randomly
         w = np.random.rand(phi.shape[1]).reshape(-1, 1)
 
-        # Shuffle the data for sequential learning
-        indices = list(range(phi.shape[0]))
-        np.random.shuffle(indices)
-
-        for i in indices:
-            phi_w = np.dot(phi, w).reshape(-1, 1)
-            target_error = f - phi_w
-            error = np.dot(target_error.T, phi).T
-            delta_w = lr * error
-            w = w + delta_w
+        for j in range(100):
+            # Shuffle the data for sequential learning
+            indices = list(range(phi.shape[0]))
+            np.random.shuffle(indices)
+            for i in indices:
+                phi_w = np.dot(phi, w).reshape(-1, 1)
+                target_error = f - phi_w
+                error = np.dot(target_error.T, phi).T
+                delta_w = lr * error
+                w = w + delta_w
 
         return w

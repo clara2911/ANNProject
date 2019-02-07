@@ -19,27 +19,50 @@ def part_3_2():
     Regression problem on two functions (sin, square) with added noise
     using online (sequential) learning with delta rule
     """
-    method = 'delta_rule'  # delta_rule
+    method = 'delta_rule'  # delta_rule , least_squares
     network_size = 63
     learning_rate = 0.01  # optimal value: 0.01 bigger overshoots, smaller underperforms
 
     sin, square = generate_data.sin_square(verbose=verbose)
-    sin = add_noise_to_data(sin)
-    square = add_noise_to_data(square)
 
     data = sin  # use which dataset to train and test
+    data = add_noise_to_data(data)
 
-    rbf_net = RBF_Net(network_size, data.train_X)
+    iterations = 10
+    iter_results = {}
+    errors = []
+    y_preds = []
+    # number of RBF nodes in the network
+    network_size_list = [63]  # [5, 10, 20, 30, 63] #, 80, 100, 150, 200]  # NOTE: larger than sample size
+    sigmas = [0.000001, 0.1, 0.25, 0.5, 0.75, 1.]
+    #sigmas = [0.001, 0.1, 1., 10.]
+    for i in range(iterations):
+        for sigma in sigmas:
+            for network_size in network_size_list:
 
-    y_train_pred, train_error = rbf_net.train(data.train_X, data.train_Y, method, lr=learning_rate)
+                rbf_net = RBF_Net(network_size, data.train_X, sigma=sigma)
 
-    y_pred, test_error = rbf_net.test(data.test_X, data.test_Y)
+                y_train_pred, train_error = rbf_net.train(data.train_X, data.train_Y, method, lr=learning_rate)
 
-    print('Train error: ', train_error)
-    print('Test error: ', test_error)
+                y_pred, test_error = rbf_net.test(data.test_X, data.test_Y)
 
-    plotter.plot_2d_function(data.train_X, data.train_Y, y_pred=y_train_pred, title='Train')
-    plotter.plot_2d_function(data.test_X, data.test_Y, y_pred=y_pred, title='Test')
+                print('# Nodes: ', network_size, ' sigma: ', sigma)
+                print('Train error: ', train_error)
+                print('Test error: ', test_error)
+                errors.append(test_error)
+                y_preds.append(y_pred)
+
+            iter_results[i] = [errors, y_preds]
+
+        # plotter.plot_errors(network_size_list, errors, title='Test error')
+        # print(rbf_net.weights[:20])
+
+    # plotter.plot_2d_function_multiple(data.test_X, data.test_Y, y_preds)
+
+    plotter.plot_errors(sigmas, errors, title='Test error')
+
+    #plotter.plot_2d_function(data.train_X, data.train_Y, y_pred=y_train_pred, title='Train')
+    #plotter.plot_2d_function(data.test_X, data.test_Y, y_pred=y_pred, title='Test')
 
 
 def compare_to_ann():
