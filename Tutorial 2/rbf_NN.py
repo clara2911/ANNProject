@@ -35,9 +35,9 @@ class RBF_Net:
 
         N = train_X.shape[0]  # Number of data points
 
-        if (N > net_size):  # Number of data points should always be lower or equal to number of nodes
-           print("System overdetermined. Cannot solve it using least squares.")
-           exit()
+        # if (N > net_size):  # Number of data points should always be lower or equal to number of nodes
+        #    print("System overdetermined. Cannot solve it using least squares.")
+        #    exit()
 
         self.RBF_Layer = []
         # Initialize mu's evenly spaced in the x axis of the data and random sigma's
@@ -131,7 +131,7 @@ class RBF_Net:
         for i in range(f.shape[0]):
             error += f[i] - f_pred[i]
 
-        return (error / f.shape[0])
+        return np.abs(error / f.shape[0])
 
 
     def lstsq(self, phi, f):
