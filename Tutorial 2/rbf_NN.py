@@ -15,36 +15,39 @@ class RBF_Net:
         """
         A class that represents a RBF node
         """
-        def __init__(self):
+        def __init__(self, mu):
             """
             Initialize random center and std
             """
-            # TODO: MAKE mu evenly separated within the X axis
-            self.mu = np.random.normal(0, 1.)
-            self.sigma = np.random.normal(0, 1.)
+            self.mu = mu
+            self.sigma = np.random.normal(0, 0.5)
 
 
     def __init__(self, net_size, train_X):
         """
         Initialize a RBF Network
         """
+        # Set which algorithm to use
+        self.learning_method = {
+            'least_squares' : self.lstsq,
+            'delta_rule' : self.delta_rule
+        }
 
         N = train_X.shape[0]  # Number of data points
 
         if (N > net_size):  # Number of data points should always be lower or equal to number of nodes
-            print("System overdetermined. Cannot solve it using least squares.")
-            exit()
+           print("System overdetermined. Cannot solve it using least squares.")
+           exit()
 
-        # Initialize RBF layer by adding randomly initialized nodes
         self.RBF_Layer = []
+        # Initialize mu's evenly spaced in the x axis of the data and random sigma's
+        mu_step = train_X[-1] / net_size
         for i in range(net_size):
-            self.RBF_Layer.append(self.RBF_node())
+            mu_i = i * mu_step
+            self.RBF_Layer.append(self.RBF_node(mu_i))
 
-        # Set which algorithm to use
-        self.learning_method = {
-            'least_squares' : self.lstsq(),
-            'delta_rule' : self.delta_rule()
-        }
+        self.weights = None
+        self.phi = None
 
 
     def train(self, train_X, train_Y, method):
@@ -58,11 +61,35 @@ class RBF_Net:
         train_X = train_X.reshape(-1, 1)
         train_Y = train_Y.reshape(-1, 1)
 
+        phi = self.calculate_phi(train_X)
+
         algorithm = self.learning_method[method]
-        return algorithm.update(self.RBF_Layer, train_X, train_Y)
+        self.weights = algorithm(phi, train_Y)
+
+        y_train_pred = self.calculate_out(phi, self.weights)
+
+        abs_res_error = self.calc_abs_res_error(train_Y, y_train_pred)
+
+        return y_train_pred, abs_res_error
 
 
-    def transfer_function(x, mu_i, sigma_i):
+    def test(self, test_X, test_Y):
+        """
+        Forward pass
+        """
+        test_X = test_X.reshape(-1, 1)
+        test_Y = test_Y.reshape(-1, 1)
+
+        phi_test = self.calculate_phi(test_X)
+
+        y_pred = self.calculate_out(phi_test, self.weights)
+
+        abs_res_error = self.calc_abs_res_error(test_Y, y_pred)
+
+        return y_pred, abs_res_error
+
+
+    def transfer_function(self, x, mu_i, sigma_i):
         """
         Calculate the output of a Gaussian RBF node i
         """
@@ -72,7 +99,22 @@ class RBF_Net:
         return np.exp(exp_term)
 
 
-    def calculate_out(phi, w):
+    def calculate_phi(self, train_X):
+        """
+        Calculate the output of the rbf nodes for every training sample
+        """
+        # Initialize the output of the RBF nodes
+        phi = np.empty(shape=(train_X.shape[0], len(self.RBF_Layer)))
+
+        # TODO: this can be optimized to not use 2 for loops, but pass it as a matrix
+        for i, sample in enumerate(train_X):
+            for j, node in enumerate(self.RBF_Layer):
+                phi[i][j] = self.transfer_function(sample, node.mu, node.sigma)
+
+        return phi
+
+
+    def calculate_out(self, phi, w):
         """
         Calculate an approximation of the output function given the output
         of the RBF nodes and the weights of the hidden layer
@@ -81,60 +123,36 @@ class RBF_Net:
         return f_out
 
 
-    class lstsq(object):
+    def calc_abs_res_error(self, f, f_pred):
         """
-        A class containing all the necessary functions for the Least Squares Solution method
+        Calculate the absolute residual error (average absolute difference between network outputs(f_pred) and target values(f))
         """
-        def update(self, RBF_Layer, train_X, train_Y):
-            """
-            Update the weights using batch learning and the least square solution
-            """
+        error = 0.
+        for i in range(f.shape[0]):
+            error += f[i] - f_pred[i]
 
-            phi = self.calculate_phi(RBF_Layer, train_X)
-
-            w = self.calculate_weights(phi, train_Y)
-
-            y_pred = RBF_Net.calculate_out(phi, w)
-
-            return y_pred
+        return (error / f.shape[0])
 
 
-        def calculate_phi(self, RBF_Layer, train_X):
-            """
-            Calculate the output of the rbf nodes for every training sample
-            """
-            # Initialize the output of the RBF nodes
-            phi = np.empty(shape=(train_X.shape[0], len(RBF_Layer)))
-
-            # TODO: this can be optimized to not use 2 for loops, but pass it as a matrix
-            for i, sample in enumerate(train_X):
-                for j, node in enumerate(RBF_Layer):
-                    phi[i][j] = RBF_Net.transfer_function(sample, node.mu, node.sigma)
-
-            return phi
-
-
-        def calculate_weights(self, phi, f):
-            """
-            Obtain w which minimizes the system phi.T * f_pred = phi.T * f
-            """
-            pseudo_inv_phi = np.dot(phi.T, phi)
-            pseudo_inv_f = np.dot(phi.T, f)
-            # NOTE: This is using a ready made function (Working correctly)
-            w = np.linalg.lstsq(pseudo_inv_phi, pseudo_inv_f, rcond=None)[0]
-            # NOTE: This is manually solving the equation (Currently(!) not working correctly)
-            # pseudo_inv_phi = np.linalg.inv(pseudo_inv_phi)
-            # w = np.dot(pseudo_inv_phi.T, pseudo_inv_f)
-
-            return w
-
-
-    class delta_rule(object):
+    def lstsq(self, phi, f):
         """
-        A class containing all the necessary functions for the delta rule method
+        Update the weights using batch learning and the least square solution
+        i.e Obtain w which minimizes the system phi.T * f_pred = phi.T * f
         """
-        def update(self, RBF_Layer, train_X, train_Y):
-            """
-            Update the weights using sequential (online) learning and delta rule
-            """
-            return
+
+        pseudo_inv_phi = np.dot(phi.T, phi)
+        pseudo_inv_f = np.dot(phi.T, f)
+        # NOTE: This is using a ready made function (Working correctly)
+        w = np.linalg.lstsq(pseudo_inv_phi, pseudo_inv_f, rcond=None)[0]
+        # NOTE: This is manually solving the equation (Currently(!) not working correctly)
+        # pseudo_inv_phi = np.linalg.inv(pseudo_inv_phi)
+        # w = np.dot(pseudo_inv_phi.T, pseudo_inv_f)
+
+        return w
+
+
+    def delta_rule(self, phi, f):
+        """
+        Update the weights using sequential (online) learning and delta rule
+        """
+        return
