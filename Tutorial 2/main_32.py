@@ -26,21 +26,24 @@ def part_3_2():
     sin, square = generate_data.sin_square(verbose=verbose)
 
     data = sin  # use which dataset to train and test
-    data = add_noise_to_data(data)
+    # noisy_data = add_noise_to_data(data)
+    # data = noisy_data
 
-    iterations = 10
+    random_mu = False
+
+    iterations = 1
     iter_results = {}
     errors = []
     y_preds = []
     # number of RBF nodes in the network
-    network_size_list = [63]  # [5, 10, 20, 30, 63] #, 80, 100, 150, 200]  # NOTE: larger than sample size
-    sigmas = [0.000001, 0.1, 0.25, 0.5, 0.75, 1.]
+    network_size_list = [62]  # [5, 10, 20, 30, 63] #, 80, 100, 150, 200]  # NOTE: larger than sample size
+    sigmas = [0.1, 0.25, 0.5, 0.6, 0.75, 0.8, 0.9, 1.]
     #sigmas = [0.001, 0.1, 1., 10.]
     for i in range(iterations):
         for sigma in sigmas:
             for network_size in network_size_list:
 
-                rbf_net = RBF_Net(network_size, data.train_X, sigma=sigma)
+                rbf_net = RBF_Net(network_size, data.train_X, random_mu=random_mu, sigma=sigma)
 
                 y_train_pred, train_error = rbf_net.train(data.train_X, data.train_Y, method, lr=learning_rate)
 
@@ -53,6 +56,8 @@ def part_3_2():
                 y_preds.append(y_pred)
 
             iter_results[i] = [errors, y_preds]
+            #plotter.plot_2d_function(data.train_X, data.train_Y, y_pred=y_train_pred, title='Train')
+            #plotter.plot_2d_function(data.test_X, data.test_Y, y_pred=y_pred, title='Test')
 
         # plotter.plot_errors(network_size_list, errors, title='Test error')
         # print(rbf_net.weights[:20])
@@ -60,6 +65,41 @@ def part_3_2():
     # plotter.plot_2d_function_multiple(data.test_X, data.test_Y, y_preds)
 
     plotter.plot_errors(sigmas, errors, title='Test error')
+
+    #plotter.plot_2d_function(data.train_X, data.train_Y, y_pred=y_train_pred, title='Train')
+    #plotter.plot_2d_function(data.test_X, data.test_Y, y_pred=y_pred, title='Test')
+
+
+def train_noisy_test_clean():
+    """
+    Regression problem on two functions (sin, square) trained on noisy data
+    but tested on clean data
+    """
+    method = 'delta_rule'  # delta_rule , least_squares
+    learning_rate = 0.01  # optimal value: 0.01 bigger overshoots, smaller underperforms
+
+    sin, square = generate_data.sin_square(verbose=verbose)
+
+    data = sin  # use which dataset to train and test
+    noisy_data = add_noise_to_data(data)
+
+    random_mu = True
+
+    network_size = 63
+    sigma = 0.5
+
+    # TRAIN ON NOISY DATA
+    rbf_net = RBF_Net(network_size, noisy_data.train_X, random_mu=random_mu, sigma=sigma)
+    # TRAIN ON NOISY DATA
+    y_train_pred, train_error = rbf_net.train(noisy_data.train_X, noisy_data.train_Y, method, lr=learning_rate)
+    # TEST ON CLEAN DATA
+    y_pred, test_error = rbf_net.test(data.test_X, data.test_Y)
+
+    print('# Nodes: ', network_size, ' sigma: ', sigma)
+    print('Train error: ', train_error)
+    print('Test error: ', test_error)
+
+    # plotter.plot_errors(sigmas, errors, title='Test error')
 
     #plotter.plot_2d_function(data.train_X, data.train_Y, y_pred=y_train_pred, title='Train')
     #plotter.plot_2d_function(data.test_X, data.test_Y, y_pred=y_pred, title='Test')
@@ -94,13 +134,14 @@ def add_noise_to_data(data):
     """
     Add noise to all the train and test data samples
     """
-    data.train_X = data.train_X + np.random.normal(0, 0.1, data.train_X.shape)  # zero mean, 0.1 std
-    data.train_Y = data.train_Y + np.random.normal(0, 0.1, data.train_Y.shape)
-    data.test_X = data.test_X + np.random.normal(0, 0.1, data.test_X.shape)
-    data.test_Y = data.test_Y + np.random.normal(0, 0.1, data.test_Y.shape)
+    data.train_X = data.train_X + np.random.normal(0, 0.05, data.train_X.shape)  # zero mean, 0.1 std
+    data.train_Y = data.train_Y + np.random.normal(0, 0.05, data.train_Y.shape)
+    data.test_X = data.test_X + np.random.normal(0, 0.05, data.test_X.shape)
+    data.test_Y = data.test_Y + np.random.normal(0, 0.05, data.test_Y.shape)
     return data
 
 
 if __name__ == "__main__":
     part_3_2()
+    # train_noisy_test_clean()
     # compare_to_ann()

@@ -20,10 +20,10 @@ class RBF_Net:
             Initialize random center and std
             """
             self.mu = mu
-            self.sigma = 0.5
+            self.sigma = sigma
 
 
-    def __init__(self, net_size, train_X, sigma=0.5):
+    def __init__(self, net_size, train_X, random_mu=False, sigma=0.5):
         """
         Initialize a RBF Network
         """
@@ -34,10 +34,16 @@ class RBF_Net:
         }
 
         self.RBF_Layer = []
-        # Initialize mu's evenly spaced in the x axis of the data and random sigma's
-        mu_step = train_X[-1] / net_size
+        if (random_mu):
+            # use random mu within the range
+            mu_s = [np.random.uniform(0., train_X[-1]) for i in range(net_size)]
+        else:
+            # Initialize mu's evenly spaced in the x axis of the data and random sigma's
+            mu_step = train_X[-1] / net_size
+            mu_s = [(i * mu_step) for i in range(net_size)]
+
         for i in range(net_size):
-            mu_i = i * mu_step
+            mu_i = mu_s[i]
             self.RBF_Layer.append(self.RBF_node(mu_i, sigma))
 
         self.weights = None
@@ -143,10 +149,10 @@ class RBF_Net:
         pseudo_inv_phi = np.dot(phi.T, phi)
         pseudo_inv_f = np.dot(phi.T, f)
         # NOTE: This is using a ready made function (Working correctly)
-        w = np.linalg.lstsq(pseudo_inv_phi, pseudo_inv_f, rcond=None)[0]
+        # w = np.linalg.lstsq(pseudo_inv_phi, pseudo_inv_f, rcond=None)[0]
         # NOTE: This is manually solving the equation (Currently(!) not working correctly)
-        # pseudo_inv_phi = np.linalg.inv(pseudo_inv_phi)
-        # w = np.dot(pseudo_inv_phi.T, pseudo_inv_f)
+        pseudo_inv_phi = np.linalg.inv(pseudo_inv_phi)
+        w = np.dot(pseudo_inv_phi.T, pseudo_inv_f)
         return w
 
 
