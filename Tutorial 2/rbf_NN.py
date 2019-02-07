@@ -50,7 +50,7 @@ class RBF_Net:
         self.phi = None
 
 
-    def train(self, train_X, train_Y, method):
+    def train(self, train_X, train_Y, method, lr=None):
         """
         Forward pass
         Backward pass
@@ -64,7 +64,7 @@ class RBF_Net:
         phi = self.calculate_phi(train_X)
 
         algorithm = self.learning_method[method]
-        self.weights = algorithm(phi, train_Y)
+        self.weights = algorithm(phi, train_Y, lr)
 
         y_train_pred = self.calculate_out(phi, self.weights)
 
@@ -134,7 +134,7 @@ class RBF_Net:
         return (error / f.shape[0])
 
 
-    def lstsq(self, phi, f):
+    def lstsq(self, phi, f, _):
         """
         Update the weights using batch learning and the least square solution
         i.e Obtain w which minimizes the system phi.T * f_pred = phi.T * f
@@ -151,8 +151,22 @@ class RBF_Net:
         return w
 
 
-    def delta_rule(self, phi, f):
+    def delta_rule(self, phi, f, lr):
         """
         Update the weights using sequential (online) learning and delta rule
         """
-        return
+        # Initialize weights randomly
+        w = np.random.rand(phi.shape[1]).reshape(-1, 1)
+
+        # Shuffle the data for sequential learning
+        indices = list(range(phi.shape[0]))
+        np.random.shuffle(indices)
+
+        for i in indices:
+            phi_w = np.dot(phi, w).reshape(-1, 1)
+            target_error = f - phi_w
+            error = np.dot(target_error.T, phi).T
+            delta_w = lr * error
+            w = w + delta_w
+
+        return w
