@@ -7,6 +7,7 @@ Authors: Kostis SZ, Romina Ariazza and Clara Tump
 """
 
 import numpy as np
+from sklearn.metrics import mean_squared_error
 
 class RBF_Net:
 
@@ -15,15 +16,15 @@ class RBF_Net:
         """
         A class that represents a RBF node
         """
-        def __init__(self, mu):
+        def __init__(self, mu, sigma):
             """
             Initialize random center and std
             """
             self.mu = mu
-            self.sigma = 0.5
+            self.sigma = sigma
 
 
-    def __init__(self, net_size, train_X):
+    def __init__(self, net_size, train_X, random_mu=False, sigma=0.5):
         """
         Initialize a RBF Network
         """
@@ -33,24 +34,24 @@ class RBF_Net:
             'delta_rule' : self.delta_rule
         }
 
-        N = train_X.shape[0]  # Number of data points
-
-        # if (N > net_size):  # Number of data points should always be lower or equal to number of nodes
-        #    print("System overdetermined. Cannot solve it using least squares.")
-        #    exit()
-
         self.RBF_Layer = []
-        # Initialize mu's evenly spaced in the x axis of the data and random sigma's
-        mu_step = train_X[-1] / net_size
+        if (random_mu):
+            # use random mu within the range
+            mu_s = [np.random.uniform(0., 6) for i in range(net_size)]
+        else:
+            # Initialize mu's evenly spaced in the x axis of the data and random sigma's
+            mu_step = train_X[-1] / net_size
+            mu_s = [(i * mu_step) for i in range(net_size)]
+
         for i in range(net_size):
-            mu_i = i * mu_step
-            self.RBF_Layer.append(self.RBF_node(mu_i))
+            mu_i = mu_s[i]
+            self.RBF_Layer.append(self.RBF_node(mu_i, sigma))
 
         self.weights = None
         self.phi = None
 
 
-    def train(self, train_X, train_Y, method):
+    def train(self, train_X, train_Y, method, lr=None, epochs=100):
         """
         Forward pass
         Backward pass
@@ -64,7 +65,7 @@ class RBF_Net:
         phi = self.calculate_phi(train_X)
 
         algorithm = self.learning_method[method]
-        self.weights = algorithm(phi, train_Y)
+        self.weights = algorithm(phi, train_Y, lr, epochs)
 
         y_train_pred = self.calculate_out(phi, self.weights)
 
@@ -106,7 +107,6 @@ class RBF_Net:
         # Initialize the output of the RBF nodes
         phi = np.empty(shape=(train_X.shape[0], len(self.RBF_Layer)))
 
-        # TODO: this can be optimized to not use 2 for loops, but pass it as a matrix
         for i, sample in enumerate(train_X):
             for j, node in enumerate(self.RBF_Layer):
                 phi[i][j] = self.transfer_function(sample, node.mu, node.sigma)
@@ -129,30 +129,47 @@ class RBF_Net:
         """
         error = 0.
         for i in range(f.shape[0]):
-            error += f[i] - f_pred[i]
+            error += np.abs(f[i] - f_pred[i])
 
-        return np.abs(error / f.shape[0])
+        return error / f.shape[0]
 
 
-    def lstsq(self, phi, f):
+    def lstsq(self, phi, f, _, _):
         """
         Update the weights using batch learning and the least square solution
         i.e Obtain w which minimizes the system phi.T * f_pred = phi.T * f
         """
+        N = f.shape[0]  # Number of data points
+        n = phi.shape[1]  # Number of nodes
 
         pseudo_inv_phi = np.dot(phi.T, phi)
         pseudo_inv_f = np.dot(phi.T, f)
-        # NOTE: This is using a ready made function (Working correctly)
-        w = np.linalg.lstsq(pseudo_inv_phi, pseudo_inv_f, rcond=None)[0]
-        # NOTE: This is manually solving the equation (Currently(!) not working correctly)
-        # pseudo_inv_phi = np.linalg.inv(pseudo_inv_phi)
-        # w = np.dot(pseudo_inv_phi.T, pseudo_inv_f)
-
+        # NOTE: This is using a ready made function
+        # w = np.linalg.lstsq(pseudo_inv_phi, pseudo_inv_f, rcond=None)[0]
+        # NOTE: This is manually solving the equation
+        pseudo_inv_phi = np.linalg.inv(pseudo_inv_phi)
+        w = np.dot(pseudo_inv_phi.T, pseudo_inv_f)
         return w
 
 
-    def delta_rule(self, phi, f):
+    def delta_rule(self, phi, f, lr, epochs):
         """
         Update the weights using sequential (online) learning and delta rule
         """
-        return
+        # Initialize weights randomly
+        w = np.random.rand(phi.shape[1]).reshape(-1, 1)
+
+        for j in range(epochs):
+            # Shuffle the data for sequential learning
+            indices = list(range(phi.shape[0]))
+            np.random.shuffle(indices)
+            for i in indices:
+                phi_i = phi[i]
+                f_i = f[i]
+                phi_w = np.dot(phi_i, w).reshape(-1, 1)
+                target_error = f_i - phi_w
+                error = np.dot(target_error.T, phi_i).T
+                delta_w = lr * error
+                w = w + delta_w
+
+        return w
