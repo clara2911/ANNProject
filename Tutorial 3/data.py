@@ -14,7 +14,7 @@ def load_file():
     Read file that has one line of integers separated by commas (,)
     :return: a dictionary where values are 2D arrays of 32x32
     """
-    num_of_images = 12
+    num_of_images = 11
     image_len = 1024
     dim_i_len = 32
     dim_j_len = 32
