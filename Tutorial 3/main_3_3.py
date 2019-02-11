@@ -28,8 +28,8 @@ if __name__ == '__main__':
     Hop = HopfieldNet(train_set, **params)
     Hop.batch_train()
 
-    p10 = P[9].ravel()
-    p11 = P[10].ravel()
+    p10 = P[7].ravel()
+    p11 = P[8].ravel()
     recall_set = np.vstack((p10, p11))
     recalled_set = Hop.recall(recall_set)
     print("hola")
