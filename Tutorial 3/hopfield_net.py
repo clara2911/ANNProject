@@ -46,8 +46,7 @@ class HopfieldNet:
             for i in range(num_recall):
                 pattern_i = recall_set[i,:]
                 for j, w in enumerate(self.W):
-                    pattern_i[j] = np.sign(w.dot(pattern_i) - threshold)
-                recalled_patterns[i, :] = pattern_i
+                    recalled_patterns[i, j] = np.sign(w.dot(pattern_i) - threshold)
         return recalled_patterns
 
     def batch_train(self):
