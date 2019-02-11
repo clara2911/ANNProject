@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Test the test vectors for hopfield_net
+Plotting functions
 
 Authors: Kostis SZ, Romina Ariazza and Clara Tump
 """

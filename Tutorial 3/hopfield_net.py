@@ -40,17 +40,14 @@ class HopfieldNet:
 
         threshold: For this assignment, default is 0.
         """
-
         num_recall = recall_set.shape[0]
         recalled_patterns = np.zeros((num_recall, self.num_feats))
-        for i in range(num_recall):
-            x = recall_set[i,:]
-            x_updated = np.zeros(x.shape)
-            for epoch in range(self.epochs):
+        for epoch in range(self.epochs):
+            for i in range(num_recall):
+                pattern_i = recall_set[i,:]
                 for j, w in enumerate(self.W):
-                    x_updated[j] = np.sign(w.dot(x) - threshold)
-                x = x_updated
-            recalled_patterns[i, :] = x_updated
+                    pattern_i[j] = np.sign(w.dot(pattern_i) - threshold)
+                recalled_patterns[i, :] = pattern_i
         return recalled_patterns
 
     def batch_train(self):
@@ -62,11 +59,8 @@ class HopfieldNet:
          of a node with itself.
         *** this is the method provided by clara's video and the assignment
         """
-
-        W = np.zeros((self.num_feats, self.num_feats))
         for x in self.train_samples:
-            W += np.outer(x, x) - np.eye(self.num_feats)
-        self.W = W
+            self.W += np.outer(x, x) - np.eye(self.num_feats)
 
     def _init_weights(self):
         """
