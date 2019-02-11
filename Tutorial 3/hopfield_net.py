@@ -15,7 +15,7 @@ class HopfieldNet:
         Initialize algorithm with data and parameters
         """
         var_defaults = {
-            "epochs" : 20,
+            "epochs" : 100,
             "neurons": 10,
             "learn_method": 'classic'
         }
@@ -45,10 +45,17 @@ class HopfieldNet:
         recalled_patterns = np.zeros((num_recall, self.num_feats))
         for i in range(num_recall):
             x = recall_set[i,:]
+            epoch = 0
+            # we iterate
             x_updated = np.zeros(x.shape)
-            for j, w in enumerate(self.W):
-                x_updated[j] = np.sign(w.dot(x) - threshold)
-            recalled_patterns[i,:] = x_updated
+            while epoch <= self.epochs:
+                for j, w in enumerate(self.W):
+                    x_updated[j] = np.sign(w.dot(x) - threshold)
+                if np.mean(x_updated - x) <= 0.5:
+                    recalled_patterns[i, :] = x_updated
+                    break
+                x = x_updated
+                epoch += 1
         return recalled_patterns
 
     def batch_train(self):
