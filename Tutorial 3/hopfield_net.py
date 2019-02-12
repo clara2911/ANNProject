@@ -7,6 +7,7 @@ Authors: Kostis SZ, Romina Ariazza and Clara Tump
 """
 
 import numpy as np
+from plot import show_tested
 
 
 class HopfieldNet:
@@ -31,21 +32,15 @@ class HopfieldNet:
 
     def batch_train(self):
         """
-        Synchronous update. Using all units to update at the same time.
+        We train with all patterns at the same time.
         The final weights are the result of summing the outer product
-        of the patterns learned. We subtract an identity to this matrix because
-        we have to keep the diagonal = 0, given that we cannot consider the product
-        of a node with itself.
+        of the patterns learned. We subtract an identity to this matrix bacause
+         we have to keep diagonal = 0, given that we cannot consider the product
+         of a node with itself.
+        *** this is the method provided by clara's video and the assignment
         """
         for x in self.train_samples:
             self.W += np.outer(x, x) - np.eye(self.num_feats)
-
-    def sequential_update(self):
-        """
-        Asynchronous update. Using only one unit, picked randomly, to update at a time.
-        """
-        pass
-
 
     def recall(self, recall_set, epochs=100, threshold=0.):
         """
@@ -61,14 +56,16 @@ class HopfieldNet:
         num_recall = recall_set.shape[0]
 
         recalled_patterns = np.zeros((num_recall, self.num_feats))
+        # Iterate through epochs
         for epoch in range(epochs):
+            # Iterate through patterns to recall
             for i in range(num_recall):
                 pattern_i = recall_set[i,:]
                 for j, w in enumerate(self.W):
                     recalled_patterns[i, j] = np.sign(w.dot(pattern_i) - threshold)
         return recalled_patterns
 
-    def sequential_recall(self, recall_set, threshold = 0):
+    def sequential_recall(self, recall_set, epochs=1000, threshold=0., plot_at_100=False):
         """
         function to reconstruct a learned pattern:
         reconstructed pattern is equal to the product of the provided
@@ -80,30 +77,25 @@ class HopfieldNet:
         threshold: For this assignment, default is 0.
         """
         num_recall = recall_set.shape[0]
-        energy_evol = {}
         recalled_patterns = np.zeros((num_recall, self.num_feats))
+
+        energy_evol = {}
+        # Iterate through patterns to recall
         for i in range(num_recall):
             energy_evol[i] = []
             pattern_i = recall_set[i, :]
-            for epoch in range(self.epochs):
-                print(epoch)
+            # Iterate through epochs
+            for epoch in range(epochs):
+                # Pick a random unit each time
                 rand_pick = np.random.choice(range(len(pattern_i)))
-                pattern_i[rand_pick] = np.sign(self.W[rand_pick,:].dot(pattern_i) - threshold)
-                energy_evol[i] += [self.energy(pattern_i)]
-            recalled_patterns[i, :] = pattern_i
-        return recalled_patterns, energy_evol
+                recalled_patterns[i, rand_pick] = np.sign(self.W[rand_pick, :].dot(pattern_i) - threshold)
+                energy_evol[i] += [self.energy(recalled_patterns[i, rand_pick])]
 
-    def batch_train(self):
-        """
-        We train with all patterns at the same time.
-        The final weights are the result of summing the outer product
-        of the patterns learned. We subtract an identity to this matrix bacause
-         we have to keep diagonal = 0, given that we cannot consider the product
-         of a node with itself.
-        *** this is the method provided by clara's video and the assignment
-        """
-        for x in self.train_samples:
-            self.W += np.outer(x, x) - np.eye(self.num_feats)
+                # Plot evolution through time
+                if plot_at_100 and epoch % 100 == 0:
+                    show_tested(recall_set[i], recalled_patterns[i].reshape(32, 32), 32, 32)
+
+        return recalled_patterns, energy_evol
 
     def energy(self, pattern, threshold = 0):
         """ Function of energy, this allows to keep in track the convergence
