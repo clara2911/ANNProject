@@ -12,7 +12,7 @@ from plot import show_tested
 from hopfield_net import HopfieldNet
 
 
-batch_epochs = 500
+batch_epochs = 1
 
 
 def part_3_4():
