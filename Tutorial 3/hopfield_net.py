@@ -49,6 +49,31 @@ class HopfieldNet:
                     recalled_patterns[i, j] = np.sign(w.dot(pattern_i) - threshold)
         return recalled_patterns
 
+    def sequential_recall(self, recall_set, threshold = 0):
+        """
+        function to reconstruct a learned pattern:
+        reconstructed pattern is equal to the product of the provided
+        recall sample with the weights.
+
+        recall_set: each row contains a pattern that is going to be use to
+        recall a learned pattern from it.
+
+        threshold: For this assignment, default is 0.
+        """
+        num_recall = recall_set.shape[0]
+        energy_evol = {}
+        recalled_patterns = np.zeros((num_recall, self.num_feats))
+        for i in range(num_recall):
+            energy_evol[i] = []
+            pattern_i = recall_set[i, :]
+            for epoch in range(self.epochs):
+                print(epoch)
+                rand_pick = np.random.choice(range(len(pattern_i)))
+                pattern_i[rand_pick] = np.sign(self.W[rand_pick,:].dot(pattern_i) - threshold)
+                energy_evol[i] += [self.energy(pattern_i)]
+            recalled_patterns[i, :] = pattern_i
+        return recalled_patterns, energy_evol
+
     def batch_train(self):
         """
         We train with all patterns at the same time.
