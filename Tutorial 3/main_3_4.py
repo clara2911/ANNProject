@@ -8,7 +8,7 @@ Authors: Kostis SZ, Romina Arriaza and Clara Tump
 
 import numpy as np
 import data
-from plot import show_trained, show_tested
+from plot import show_tested
 from hopfield_net import HopfieldNet
 
 
@@ -40,7 +40,7 @@ def part_3_4():
     test_data = np.asarray(p_test)
 
     # Set noise percentages to test on [start, end, step]
-    noise_percentages = np.arange(0, 1., 0.01)
+    noise_percentages = np.arange(0, 100, 1)
 
     # Test for different percentages of noise
     for noise_perc in noise_percentages:
@@ -54,7 +54,7 @@ def part_3_4():
         show_tested(test_data[0], test_pred_1, test_pred_1.shape[0], test_pred_1.shape[1])
 
 
-def add_noise(pattern, noise_percentage=0.1):
+def add_noise(pattern, noise_percentage=0):
     """
     Add a specific amount of noise to the data.
     By noise we defined selecting a specific number of units and flipping them
@@ -63,8 +63,13 @@ def add_noise(pattern, noise_percentage=0.1):
     :return the new noisy data
     """
     indices = range(pattern.shape[0])
-    rand_pick = np.random.choice(indices, noise_percentage * 100, replace=False)
+    n_units_to_flip = int(pattern.shape[0] * (noise_percentage / 100.))
 
+    picks = np.random.choice(indices, n_units_to_flip, replace=True)
+    for i in picks:
+        pattern[i] = pattern[i] * -1
+
+    return pattern
 
 
 if __name__ == '__main__':
