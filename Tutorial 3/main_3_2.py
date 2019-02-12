@@ -11,7 +11,7 @@ from plot import show_trained, show_tested
 from hopfield_net import HopfieldNet
 
 
-batch_epochs = 500
+batch_epochs = 1
 seq_epochs = 6000
 
 def part_3_2():
@@ -33,7 +33,7 @@ def part_3_2():
 
     method = 'sequential'
     #test_stability(train_data, method)
-    test_recovery(train_data, method)
+    #test_recovery(train_data, method)
 
 
 def test_stability(train_data, method):
