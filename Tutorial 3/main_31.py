@@ -29,15 +29,11 @@ def main():
     x1d = np.array([1, -1, 1 ,-1 ,1, -1, -1 , 1])
     x2d = np.array([1, 1, -1, -1 , -1, 1 , -1, -1])
     x3d = np.array([1, 1, 1, -1 ,1, 1 , -1 ,1])
-    test_set = np.vstack((x1d, x2d, x3d, train_set))
-    recalled_set = hop.recall(test_set)
+    test_set = np.vstack((train_set, x1d, x2d, x3d))
+    recalled_set = hop.recall(test_set, epochs=100)
 
-    attractors = np.unique(recalled_set, axis=0)
-    print("num attractors: ", attractors.shape)
-
-    # for i in range(test_set.shape[0]):
-    #     show_tested(test_set[i], recalled_set[i], 4, 2)
+    for i in range(test_set.shape[0]):
+        show_tested(test_set[i], recalled_set[i], 4, 2)
 
 if __name__ == '__main__':
     main()
-

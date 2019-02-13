@@ -42,7 +42,7 @@ class HopfieldNet:
         for x in self.train_samples:
             self.W += np.outer(x, x) - np.eye(self.num_feats)
 
-    def recall(self, recall_set, epochs=100, threshold=0.):
+    def recall(self, test_set, epochs=100, threshold=0.):
         """
         function to reconstruct a learned pattern:
         reconstructed pattern is equal to the product of the provided
@@ -53,17 +53,10 @@ class HopfieldNet:
 
         threshold: For this assignment, default is 0.
         """
-        num_recall = recall_set.shape[0]
-
-        recalled_patterns = np.zeros((num_recall, self.num_feats))
-        # Iterate through epochs
-        for epoch in range(epochs):
-            # Iterate through patterns to recall
-            for i in range(num_recall):
-                pattern_i = recall_set[i,:]
-                for j, w in enumerate(self.W):
-                    recalled_patterns[i, j] = np.sign(w.dot(pattern_i) - threshold)
-        return recalled_patterns
+        y = np.transpose(test_set)
+        for _ in range(epochs):
+            y = np.sign(np.dot(self.W,y) + threshold)
+        return np.transpose(y)
 
     def sequential_recall(self, recall_set, epochs=1000, threshold=0., plot_at_100=False):
         """
