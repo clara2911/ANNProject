@@ -42,16 +42,12 @@ class HopfieldNet:
         for x in self.train_samples:
             self.W += np.outer(x, x) - np.eye(self.num_feats)
 
+
     def recall(self, test_set, epochs=100, threshold=0.):
         """
         function to reconstruct a learned pattern:
         reconstructed pattern is equal to the product of the provided
         recall sample with the weights.
-
-        recall_set: each row contains a pattern that is going to be use to
-        recall a learned pattern from it.
-
-        threshold: For this assignment, default is 0.
         """
         y = np.transpose(test_set)
         for _ in range(epochs):
