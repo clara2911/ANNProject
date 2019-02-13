@@ -26,7 +26,7 @@ def first_three():
     train_set = np.vstack((p0, p1))
     train_set = np.vstack((train_set, p2))
 
-    Hop = HopfieldNet(train_set, **params)
+    Hop = HopfieldNet(train_set)
     Hop.batch_train()
 
     # get energy per pattern
@@ -91,7 +91,7 @@ def last_two():
     #W = (W + W.T) / 2
     p = np.random.randint(0, 1, params['neurons']).reshape(1,-1)
     p = (p*2) - 1
-    Hop = HopfieldNet(p, **params)
+    Hop = HopfieldNet(p)
     Hop.W = W
     recalled_set, energy = Hop.sequential_recall(p)
     plt.imshow(recalled_set.reshape(32,32))
