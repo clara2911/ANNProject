@@ -17,7 +17,7 @@ white black
 import matplotlib.pyplot as plt
 import math
 
-def show_tested(pattern_in, pattern_out, dim1, dim2):
+def show_tested(pattern_in, pattern_out, dim1, dim2, title="Testing patterns"):
     """
     Input one input pattern and its output pattern
     Plots it as a picture
@@ -33,7 +33,7 @@ def show_tested(pattern_in, pattern_out, dim1, dim2):
         ax2.set_title("output")
         pattern_out = pattern_out.reshape(dim1, dim2)
         ax2.imshow(pattern_out, cmap='binary')
-        plt.suptitle("Testing patterns")
+        plt.suptitle(title)
         plt.show()
     else:
         exit("EXITING PLOT: dim1*dim2 needs to be equal to num_feats")
