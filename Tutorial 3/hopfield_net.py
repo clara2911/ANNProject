@@ -49,11 +49,6 @@ class HopfieldNet:
         function to reconstruct a learned pattern:
         reconstructed pattern is equal to the product of the provided
         recall sample with the weights.
-
-        recall_set: each row contains a pattern that is going to be use to
-        recall a learned pattern from it.
-
-        threshold: For this assignment, default is 0.
         """
         y = test_set
         for _ in range(epochs):
@@ -65,14 +60,6 @@ class HopfieldNet:
                     else:
                         y[i,j] = 1
         return y
-
-    """
-    W:
-    [[ 0.  1. -1.  3.]
-     [ 1.  0.  1.  1.]
-     [-1.  1.  0. -1.]
-     [ 3.  1. -1.  0.]]
-    """
 
     def sequential_recall(self, recall_set, epochs=1000, threshold=0., plot_at_100=False):
         """
