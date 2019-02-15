@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Main file for assignment 3.1 part 
+Main file for assignment 3.1 part
 
 Authors: Kostis SZ, Romina Ariazza and Clara Tump
 
