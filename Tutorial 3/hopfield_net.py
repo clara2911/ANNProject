@@ -8,6 +8,7 @@ Authors: Kostis SZ, Romina Ariazza and Clara Tump
 
 import numpy as np
 from plot import show_tested
+from plot import show_trained
 
 
 class HopfieldNet:
@@ -43,16 +44,22 @@ class HopfieldNet:
             self.W += np.outer(x, x) - np.eye(self.num_feats)
 
 
-    def recall(self, test_set, epochs=100, threshold=0.):
+    def recall(self, test_set, epochs=10, threshold=0.):
         """
         function to reconstruct a learned pattern:
         reconstructed pattern is equal to the product of the provided
         recall sample with the weights.
         """
-        y = np.transpose(test_set)
+        y = test_set
         for _ in range(epochs):
-            y = np.sign(np.dot(self.W,y) + threshold)
-        return np.transpose(y)
+            y = np.dot(y, self.W)
+            for i in range(y.shape[0]):
+                for j in range(y.shape[1]):
+                    if y[i,j] < 0:
+                        y[i,j] = -1
+                    else:
+                        y[i,j] = 1
+        return y
 
     def sequential_recall(self, recall_set, epochs=1000, threshold=0., plot_at_100=False):
         """
