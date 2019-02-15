@@ -16,6 +16,8 @@ white black
 
 import matplotlib.pyplot as plt
 import math
+import numpy as np
+import matplotlib.pylab as pl
 
 def show_tested(pattern_in, pattern_out, dim1, dim2, title="Testing patterns"):
     """
@@ -55,3 +57,20 @@ def show_trained(train_set, dim1,dim2):
         plt.show()
     else:
         exit("EXITING PLOT: dim1*dim2 needs to be equal to num_feats")
+
+
+def plot_capacity(num_dict, acc_dict, bias_list, sparseness, num_feats):
+    """
+    :param num_dict: {bias_value1: [.., ..., ...], bias_value2: [..,...,...], ...}
+    :param acc_dict: same as num_dict but then accuracy values in the lists
+    :param bias_list: list of bias_values
+    :param sparseness: sparseness coefficient
+    """
+    colors = pl.cm.coolwarm(np.linspace(0, 1, len(bias_list)))
+    for i, bias in enumerate(bias_list):
+        plt.plot(num_dict[bias], acc_dict[bias], label='bias = '+str(bias), color=colors[i])
+    plt.axvline(x=num_feats*0.138, color='k', linestyle='--')
+    plt.legend()
+    plt.suptitle('storage capacity for sparse patterns')
+    plt.title('Sparseness = '+str(sparseness))
+    plt.show()
