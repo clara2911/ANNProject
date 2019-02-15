@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 """
-Main file for assignment 3.1
+Main file for assignment 3.1 part 
 
 Authors: Kostis SZ, Romina Ariazza and Clara Tump
 
 """
-
-# CHECK WHY -I makes sure diagonal = 0
 
 import numpy as np
 import itertools
@@ -30,7 +28,7 @@ def main():
     x2d = np.array([1, 1, -1, -1 , -1, 1 , -1, -1])
     x3d = np.array([1, 1, 1, -1 ,1, 1 , -1 ,1])
     test_set = np.vstack((train_set, x1d, x2d, x3d))
-    recalled_set = hop.recall(test_set, epochs=100)
+    recalled_set = hop.recall(test_set, epochs=15)
 
     for i in range(test_set.shape[0]):
         show_tested(test_set[i], recalled_set[i], 4, 2)
