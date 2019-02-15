@@ -22,7 +22,7 @@ def main():
     for different values for the bias
     """
     num_feats =  256 #512
-    sparseness = 0.1 # 0.1, 0.01
+    sparseness = 0.05 # 0.1, 0.01
     num_samples = [2,4,6,8,10,12,14,16,18,20,25,30]
     bias_list = [-1,-0.5,-0.1,0,0.1,0.5,1]
     num_dict = defaultdict(list)
@@ -48,7 +48,7 @@ def train_and_test(train_set, test_set, bias, sparseness):
     hop.sparse_train(sparseness)
     # batch or sequential
     # recalled_set = hop.recall_01s(test_set, epochs=100, threshold=bias)
-    recalled_set = hop.sequential_recall_01s(test_set, epochs=5000, threshold=bias)
+    recalled_set = hop.sequential_recall_01s(test_set, epochs=8000, threshold=bias)
     return recalled_set
 
 def report_acc(recalled_set, train_set):
