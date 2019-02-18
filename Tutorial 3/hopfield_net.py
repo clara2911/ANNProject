@@ -8,6 +8,7 @@ Authors: Kostis SZ, Romina Ariazza and Clara Tump
 
 import numpy as np
 from plot import show_tested
+from plot import show_trained
 
 
 class HopfieldNet:
@@ -42,17 +43,62 @@ class HopfieldNet:
         for x in self.train_samples:
             self.W += np.outer(x, x) - np.eye(self.num_feats)
 
+    def sparse_train(self, rho):
+        """
+        We train with all patterns at the same time.
+        The final weights are the result of summing the outer product
+        of the patterns learned. We subtract an identity to this matrix bacause
+         we have to keep diagonal = 0, given that we cannot consider the product
+         of a node with itself.
+        *** this is the method provided by clara's video and the assignment
+        """
+        rho_vec = rho * np.ones(self.num_feats)
+        for x in self.train_samples:
+            self.W += np.outer(x - rho_vec, x - rho_vec) - np.eye(self.num_feats)
 
-    def recall(self, test_set, epochs=100, threshold=0.):
+
+    def recall(self, test_set, epochs=10, threshold=0.):
         """
         function to reconstruct a learned pattern:
         reconstructed pattern is equal to the product of the provided
         recall sample with the weights.
         """
-        y = np.transpose(test_set)
+        y = test_set
         for _ in range(epochs):
-            y = np.sign(np.dot(self.W,y) + threshold)
-        return np.transpose(y)
+            y = np.dot(y, self.W)
+            for i in range(y.shape[0]):
+                for j in range(y.shape[1]):
+                    if y[i,j] < 0:
+                        y[i,j] = -1
+                    else:
+                        y[i,j] = 1
+        return y
+
+    def recall_01s(self, test_set, epochs=10, threshold=0.):
+        """
+        function to reconstruct a learned pattern:
+        reconstructed pattern is equal to the product of the provided
+        recall sample with the weights.
+        Used for 3.6 where we use {0,1} instead of {-1,1}
+        """
+        y = test_set
+        for _ in range(epochs):
+            y = np.dot(y, self.W )- threshold
+            y = 0.5*np.ones(y.shape) + 0.5*self._sign(y)
+
+        return y
+
+    def _sign(self, y):
+        """
+        unlike the numpy sign function this returns 1 if the input is 0.
+        """
+        for i in range(y.shape[0]):
+            for j in range(y.shape[1]):
+                if y[i, j] < 0:
+                    y[i, j] = -1
+                else:
+                    y[i, j] = 1
+        return y
 
     def sequential_recall(self, recall_set, epochs=1000, threshold=0., plot_at_100=False):
         """
@@ -85,6 +131,20 @@ class HopfieldNet:
                     show_tested(recall_set[i], recalled_patterns[i].reshape(32, 32), 32, 32)
 
         return recalled_patterns, energy_evol
+
+    def sequential_recall_01s(self, recall_set, epochs=1000, threshold=0., plot_at_100=False):
+        """
+        used for 3.6, where the inputs are binary {0,1} instead of {-1,1}
+        """
+        num_recall = recall_set.shape[0]
+        recalled_patterns = np.zeros((num_recall, self.num_feats))
+        for i in range(num_recall):
+            pattern_i = recall_set[i, :]
+            choose = range(len(pattern_i))
+            for _ in range(epochs):
+                rand_pick = np.random.choice(choose)
+                recalled_patterns[i, rand_pick] = 0.5 + 0.5*np.sign(self.W[rand_pick, :].dot(pattern_i) - threshold)
+        return recalled_patterns
 
     def energy(self, pattern, threshold = 0):
         """ Function of energy, this allows to keep in track the convergence
