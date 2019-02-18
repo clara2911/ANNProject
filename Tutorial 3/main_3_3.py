@@ -50,7 +50,7 @@ def first_three():
     print('\n')
 
     recall_set = np.vstack((p10, p11))
-    recalled_set, energy = Hop.sequential_recall(recall_set)
+    recalled_set, energy = Hop.sequential_recall(recall_set, epochs=8000)
 
     rs0_real = P[0]
     rs0_org = P[9]
@@ -88,12 +88,12 @@ def last_two():
 
     # generate weight matrix
     W = np.random.randn(params['neurons'], params['neurons'])
-    #W = (W + W.T) / 2
-    p = np.random.randint(0, 1, params['neurons']).reshape(1,-1)
-    p = (p*2) - 1
+    W = (W + W.T) / 2
+    p = np.random.randint(-1, 1, params['neurons']).reshape(1,-1)
+    p = (p*2) + 1
     Hop = HopfieldNet(p)
     Hop.W = W
-    recalled_set, energy = Hop.sequential_recall(p)
+    recalled_set, energy = Hop.sequential_recall(p, epochs=4000)
     plt.imshow(recalled_set.reshape(32,32))
     plt.show()
     plt.plot(range(len(energy[0])), energy[0])
