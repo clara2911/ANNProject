@@ -40,18 +40,19 @@ def part_3_4():
     test_data = np.asarray(p_test)
 
     # Set noise percentages to test on [start, end, step]
-    noise_percentages = np.arange(0, 100, 1)
+    noise_percentages = np.arange(0, 101, 1)
 
     # Test for different percentages of noise
     for noise_perc in noise_percentages:
         # add noise to test data
-        test_data[0] = add_noise(test_data[0], noise_perc)
+        noisy_test_data = add_noise(test_data[0], noise_perc)
         # try to recall
-        test_pred = h_net.recall(test_data, epochs=batch_epochs)
+        test_pred = h_net.recall([noisy_test_data], epochs=batch_epochs)
 
         test_pred_1 = test_pred[0].reshape(32, 32)  # prepare for plotting
 
-        show_tested(test_data[0], test_pred_1, test_pred_1.shape[0], test_pred_1.shape[1])
+        show_tested(noisy_test_data, test_pred_1, test_pred_1.shape[0], test_pred_1.shape[1],
+                    title="Testing with " + str(noise_perc) + "% noise")
 
 
 def add_noise(pattern, noise_percentage=0):
@@ -64,12 +65,15 @@ def add_noise(pattern, noise_percentage=0):
     """
     indices = range(pattern.shape[0])
     n_units_to_flip = int(pattern.shape[0] * (noise_percentage / 100.))
+    print(noise_percentage, n_units_to_flip)
+    picks = np.random.choice(indices, n_units_to_flip, replace=False)
 
-    picks = np.random.choice(indices, n_units_to_flip, replace=True)
+    noisy_pattern = np.copy(pattern)
+
     for i in picks:
-        pattern[i] = pattern[i] * -1
+        noisy_pattern[i] = pattern[i] * -1
 
-    return pattern
+    return noisy_pattern
 
 
 if __name__ == '__main__':
