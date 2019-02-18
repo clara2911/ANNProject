@@ -74,3 +74,15 @@ def plot_capacity(num_dict, acc_dict, bias_list, sparseness, num_feats):
     plt.suptitle('storage capacity for sparse patterns')
     plt.title('Sparseness = '+str(sparseness))
     plt.show()
+
+
+def plot_accuracy(accuracy):
+    """
+    Plot accuracy depending on the noise
+    :param accuracy: a dictionary of X and Y axis where X is noise percentage and Y is the respected accuracy
+    """
+    plt.plot(accuracy.keys(), accuracy.values())
+    plt.title('Original pattern: [0, 1] | Negative pattern: [-1, 0]')
+    plt.xlabel('Noise percentage')
+    plt.ylabel('Accuracy of model')
+    plt.show()

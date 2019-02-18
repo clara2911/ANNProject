@@ -9,10 +9,12 @@ Authors: Kostis SZ, Romina Arriaza and Clara Tump
 import numpy as np
 import data
 from plot import show_tested
+from plot import plot_accuracy
 from hopfield_net import HopfieldNet
 
 
 batch_epochs = 1
+show_plots = True
 
 
 def part_3_4():
@@ -40,8 +42,9 @@ def part_3_4():
     test_data = np.asarray(p_test)
 
     # Set noise percentages to test on [start, end, step]
-    noise_percentages = np.arange(0, 101, 1)
+    noise_percentages = np.arange(0, 101, 10)
 
+    acc = {}
     # Test for different percentages of noise
     for noise_perc in noise_percentages:
         # add noise to test data
@@ -49,10 +52,15 @@ def part_3_4():
         # try to recall
         test_pred = h_net.recall([noisy_test_data], epochs=batch_epochs)
 
-        test_pred_1 = test_pred[0].reshape(32, 32)  # prepare for plotting
+        acc[noise_perc] = calc_acc(test_data[0], test_pred[0])
 
-        show_tested(noisy_test_data, test_pred_1, test_pred_1.shape[0], test_pred_1.shape[1],
-                    title="Testing with " + str(noise_perc) + "% noise")
+        if show_plots:
+            test_pred_1 = test_pred[0].reshape(32, 32)  # prepare for plotting
+
+            show_tested(noisy_test_data, test_pred_1, test_pred_1.shape[0], test_pred_1.shape[1],
+                        title="Testing with " + str(noise_perc) + "% noise")
+
+    plot_accuracy(acc)
 
 
 def add_noise(pattern, noise_percentage=0):
@@ -65,7 +73,6 @@ def add_noise(pattern, noise_percentage=0):
     """
     indices = range(pattern.shape[0])
     n_units_to_flip = int(pattern.shape[0] * (noise_percentage / 100.))
-    print(noise_percentage, n_units_to_flip)
     picks = np.random.choice(indices, n_units_to_flip, replace=False)
 
     noisy_pattern = np.copy(pattern)
@@ -74,6 +81,23 @@ def add_noise(pattern, noise_percentage=0):
         noisy_pattern[i] = pattern[i] * -1
 
     return noisy_pattern
+
+
+def calc_acc(original_pattern, predicted_pattern):
+    """
+    Calculate the accuracy of the model as the difference between the patterns.
+    The flipped pattern also counts as a correct prediction.
+    :param original_pattern: the target pattern
+    :param predicted_pattern: the outcome of the model
+    :return: accuracy: [0, 100]
+    """
+    acc = np.sum(original_pattern == predicted_pattern) / float(original_pattern.shape[0])
+    negative_pattern = original_pattern * -1
+    neg_acc = np.sum(negative_pattern == predicted_pattern) / float(original_pattern.shape[0])
+
+    if neg_acc > acc:
+        acc = - neg_acc
+    return acc
 
 
 if __name__ == '__main__':
