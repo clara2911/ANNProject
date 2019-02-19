@@ -35,32 +35,45 @@ def part_3_4():
     h_net.batch_train()
 
     # Choose a pattern and add noise to it
-    test_pattern = 0  # Choose between 0, 1, 2
+    test_pattern = 2  # Choose between 0, 1, 2
 
     p_test = [p[test_pattern].flatten()]
 
     test_data = np.asarray(p_test)
 
     # Set noise percentages to test on [start, end, step]
-    noise_percentages = np.arange(0, 101, 10)
+    noise_percentages = np.arange(0, 101, 1)
 
-    acc = {}
-    # Test for different percentages of noise
-    for noise_perc in noise_percentages:
-        # add noise to test data
-        noisy_test_data = add_noise(test_data[0], noise_perc)
-        # try to recall
-        test_pred = h_net.recall([noisy_test_data], epochs=batch_epochs)
+    n_runs = 1
+    runs = []
+    for run in range(n_runs):
+        acc = {}
+        # Test for different percentages of noise
+        for noise_perc in noise_percentages:
+            # add noise to test data
+            noisy_test_data = add_noise(test_data[0], noise_perc)
+            # try to recall
+            test_pred = h_net.recall([noisy_test_data], epochs=batch_epochs)
 
-        acc[noise_perc] = calc_acc(test_data[0], test_pred[0])
+            acc[noise_perc] = calc_acc(test_data[0], test_pred[0])
 
-        if show_plots:
-            test_pred_1 = test_pred[0].reshape(32, 32)  # prepare for plotting
+            if show_plots:
+                test_pred_1 = test_pred[0].reshape(32, 32)  # prepare for plotting
 
-            show_tested(noisy_test_data, test_pred_1, test_pred_1.shape[0], test_pred_1.shape[1],
-                        title="Testing with " + str(noise_perc) + "% noise")
+                show_tested(noisy_test_data, test_pred_1, test_pred_1.shape[0], test_pred_1.shape[1],
+                            title="Testing with " + str(noise_perc) + "% noise")
 
-    plot_accuracy(acc)
+        # plot_accuracy(acc)
+        runs.append(acc)
+
+    average_acc = {}
+    for noise_perc in acc.keys():
+        av_acc_i = 0.
+        for run in range(n_runs):
+            av_acc_i += runs[run][noise_perc]
+
+        average_acc[noise_perc] = av_acc_i / float(n_runs)
+    plot_accuracy(average_acc)
 
 
 def add_noise(pattern, noise_percentage=0):
