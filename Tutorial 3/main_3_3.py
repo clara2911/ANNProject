@@ -50,7 +50,7 @@ def first_three():
     print('\n')
 
     recall_set = np.vstack((p10, p11))
-    recalled_set, energy = Hop.sequential_recall(recall_set, epochs=8000)
+    recalled_set, energy = Hop.sequential_recall_shuffle(recall_set, epochs=4)
 
     rs0_real = P[0]
     rs0_org = P[9]
@@ -58,14 +58,18 @@ def first_three():
     rs1_real = P[2]
     rs1_org = P[10]
     rs1 = recalled_set[1, :].reshape(32, 32)
+
     fig, ax = plt.subplots(1, 3)
     ax[0].imshow(rs0_real, origin="lower")
     ax[1].imshow(rs0_org, origin="lower")
     ax[2].imshow(rs0, origin="lower")
     plt.show()
+
     plt.plot(range(len(energy[0])), energy[0])
     plt.xlabel('Epoch', fontsize=16)
-    plt.ylabel('Epoch', fontsize=16)
+    plt.ylabel('Energy', fontsize=16)
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+    #plt.savefig('Energy1.png')
     plt.show()
 
     fig, ax = plt.subplots(1, 3)
@@ -75,6 +79,10 @@ def first_three():
     plt.show()
 
     plt.plot(range(len(energy[1])), energy[1])
+    plt.xlabel('Epoch', fontsize=16)
+    plt.ylabel('Energy', fontsize=16)
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+    #plt.savefig('Energy2.png')
     plt.show()
     print("hola")
 
@@ -89,17 +97,22 @@ def last_two():
     # generate weight matrix
     W = np.random.randn(params['neurons'], params['neurons'])
     W = (W + W.T) / 2
+    W = W - np.diag(W.diagonal())
     p = np.random.randint(-1, 1, params['neurons']).reshape(1,-1)
     p = (p*2) + 1
     Hop = HopfieldNet(p)
     Hop.W = W
-    recalled_set, energy = Hop.sequential_recall(p, epochs=4000)
+    recalled_set, energy = Hop.sequential_recall_shuffle(p, epochs=4000)
     plt.imshow(recalled_set.reshape(32,32))
     plt.show()
     plt.plot(range(len(energy[0])), energy[0])
+    plt.xlabel('Epoch', fontsize=16)
+    plt.ylabel('Energy', fontsize=16)
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+    plt.savefig('Energy_sym.png')
     plt.show()
 
 
 if __name__ == '__main__':
-    #first_three()
-    last_two()
+    first_three()
+    #last_two()
