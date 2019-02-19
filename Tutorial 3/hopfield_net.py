@@ -64,6 +64,7 @@ class HopfieldNet:
         recall sample with the weights.
         """
         y = test_set
+        energy = []
         for _ in range(epochs):
             y = np.dot(y, self.W)
             for i in range(y.shape[0]):
@@ -72,7 +73,8 @@ class HopfieldNet:
                         y[i,j] = -1
                     else:
                         y[i,j] = 1
-        return y
+            energy += [self.energy(y)]
+        return y, energy
 
     def recall_01s(self, test_set, epochs=10, threshold=0.):
         """
@@ -119,16 +121,59 @@ class HopfieldNet:
         for i in range(num_recall):
             energy_evol[i] = []
             pattern_i = recall_set[i, :]
+            recalled_patterns[i, :] = pattern_i
             # Iterate through epochs
             for epoch in range(epochs):
                 # Pick a random unit each time
                 rand_pick = np.random.choice(range(len(pattern_i)))
-                recalled_patterns[i, rand_pick] = np.sign(self.W[rand_pick, :].dot(pattern_i) - threshold)
-                energy_evol[i] += [self.energy(recalled_patterns[i, rand_pick])]
+                sign = np.sign(self.W[rand_pick, :].dot(pattern_i) - threshold)
+                if sign == 0.0:
+                    sign = 1.0
+                recalled_patterns[i, rand_pick] = sign
+                energy_evol[i] += [self.energy(recalled_patterns[i, :])]
 
                 # Plot evolution through time
-                if plot_at_100 and epoch % 100 == 0:
-                    show_tested(recall_set[i], recalled_patterns[i].reshape(32, 32), 32, 32)
+                #if plot_at_100 and epoch % 100 == 0:
+                #    show_tested(recall_set[i], recalled_patterns[i].reshape(32, 32), 32, 32)
+
+        return recalled_patterns, energy_evol
+
+    def sequential_recall_shuffle(self, recall_set, epochs=1000, threshold=0., plot_at_100=False):
+        """
+        function to reconstruct a learned pattern:
+        reconstructed pattern is equal to the product of the provided
+        recall sample with the weights.
+
+        recall_set: each row contains a pattern that is going to be use to
+        recall a learned pattern from it.
+
+        threshold: For this assignment, default is 0.
+        """
+        num_recall = recall_set.shape[0]
+        recalled_patterns = np.zeros((num_recall, self.num_feats))
+
+        energy_evol = {}
+        # Iterate through patterns to recall
+        for i in range(num_recall):
+            energy_evol[i] = []
+            pattern_i = recall_set[i, :]
+            random_index = np.arange(0,len(pattern_i))
+            np.random.shuffle(random_index)
+            # Iterate through epochs
+            for epoch in range(epochs):
+                # Pick a random unit each time
+                for ind in random_index:
+                    rand_pick = ind
+                    sign = np.sign(self.W[rand_pick, :].dot(pattern_i) - threshold)
+                    if sign == 0.0:
+                        sign = 1.0
+                    pattern_i[rand_pick] = sign
+                    energy_evol[i] += [self.energy(pattern_i)]
+            recalled_patterns[i, :] = pattern_i
+
+                # Plot evolution through time
+                #if plot_at_100 and epoch % 100 == 0:
+                #    show_tested(recall_set[i], recalled_patterns[i].reshape(32, 32), 32, 32)
 
         return recalled_patterns, energy_evol
 
