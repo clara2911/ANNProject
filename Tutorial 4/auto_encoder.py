@@ -60,7 +60,7 @@ class Autoencoder:
         history = self.autoencoder.fit(x_train, x_train,
                         epochs=self.epochs,
                         batch_size=self.batch_size,
-                        shuffle=True,
+                        shuffle=False,
                         verbose=self.verbose,
                         validation_data=(x_test, x_test))
         return history
@@ -68,5 +68,5 @@ class Autoencoder:
     def test(self, x_test, binary=True, batch_size=32, verbose=1):
         x_reconstr = self.autoencoder.predict(x_test, batch_size=batch_size, verbose=verbose)
         if binary:
-            x_reconstr = np.where(x_reconstr > 0.5, 0, 1)
+            x_reconstr = np.where(x_reconstr < 0.5, 0, 1)
         return x_reconstr

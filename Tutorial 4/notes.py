@@ -2,14 +2,6 @@
 Just some notes on the structure of the assignment
 """
 
-"""
-Load data from local cvs
-"""
-
-"""
-Setup DNN
-"""
-
 # Weight matrix 28x28 with small normally distributed random values (m=0.  s=0.1)
 # biases of all layers initialized to 0
 
@@ -30,6 +22,14 @@ Setup DNN
 # - MSE: For each image compute the MSE of original input and reconstructed input
 # - Testing: sample one image from each class and plot side-by-side original and reconstructed
 # Clara: Done and can be found in plot.py --> plot_loss and plot_images
+
+# -----------------------
+# ---  Clara's notes  ---
+# Auto-encoder MSE < 0.05 yields recognizable digit reconstruction.
+# why doesn't it overfit for undercomplete eg 0.9 ? train loss is not well below val_loss.
+# I would expect it to overfit on the train_data a little bit at least?
+# Why are the reconstructed images inverted?
+# ----------------------
 
 """
 Experiments for 3.1: Single-layer Autoencoder
@@ -70,20 +70,47 @@ Experiments for 3.1: Single-layer Autoencoder
 """5: Plot node weights"""
 # Plot weights of units
 # Reshape weight vector to matrix
-# Plot for 100, 200, 400 hidden nodes
+# Plot for 100, 200, 400 hidden nodes for the hidden layer
 
 
 """
 Experiments for 3.2: Classification using a stacked pre-trained autoencoder
 
 The point of this part is to use a Deep Neural Network with the hidden layers pretrained as an Autoencoder
-Then use this representation to the final output layer for classification
+Then use this representation as input to a logistic regression classification model
+
+# train using greedy layer by layer pre-training
+
+# Add an output layer to the DNN where Output layer dims = num of classes
 """
 
-"""1"""
-# Add an output layer to the DNN where Output layer dims = num of classes
-
-"""2"""
+"""1: number of layers """
 # Compare the classification performance obtained with different number of hidden layers (1,2 and 3).
+# Also look at classification performance of 0 layers: Just simple classification layer
+# (?logistic regression) on raw input
 
-"""3"""
+"""2: number of nodes"""
+# As the size of hidden layers, first choose the optimal
+# number of nodes in the rst hidden layer based on your experiences in the previous
+# task (3.1) and then decide on the size of the other layers within a similar
+# range (a bit more or less; the classication performance on the training or validation
+# data subset should guide this process)
+
+""""3: effect of each layer"""
+# Look at the performance after each layer
+# - reconstruction error
+# - classification error
+
+""""4: representations"""
+# Examine the hidden layer representations
+# (beyond the first hidden layer already studied in the previous task).
+# Observe the effect of images representing dierent digits on hidden units in the
+# hidden layers.
+
+"""5: compute time"""
+# Do some tests for compute time aspects
+
+"""6: Optional: convolutional"""
+# test the effect of making it a convnet instead of dense layers
+
+

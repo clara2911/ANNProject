@@ -17,17 +17,22 @@ def main():
     x_train, y_train, x_test, y_test = data.mnist()
 
     params = {
-            "epochs" : 2,
-            "num_hid_nodes": 32,
+            "epochs" : 50,
+            "num_hid_nodes": int(x_train.shape[1]*0.9),
+            "weight_init": [0.0, 0.1],
+            "activations": 'sigmoid', #relu is much better performance
+            "lr": 0.15,
+            "decay": 1e-6,
+            "momentum": 0.1,
         }
     auto_enc1 = Autoencoder(**params)
     history = auto_enc1.train(x_train, x_test)
-    # plot.plot_loss(history, loss_type='MSE')
+    plot.plot_loss(history, loss_type='MSE')
     x_reconstr = auto_enc1.test(x_test, binary=True)
     plot_traintest(x_test, y_test, x_reconstr)
 
 def plot_traintest(x_test, y_test, x_reconstr):
-    true_ims_plot, reconstr_ims_plot = np.zeros([10, 784]), np.zeros([10, 784])
+    true_ims_plot, reconstr_ims_plot = np.zeros([10, x_test.shape[1]]), np.zeros([10, x_reconstr.shape[1]])
     for i in range(10):
         indices, = np.where(y_test == i)
         index = indices[0]
