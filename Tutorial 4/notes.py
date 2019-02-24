@@ -10,35 +10,43 @@ Load data from local cvs
 Setup DNN
 """
 
-# Weight matrix 28x28 with small normally distributed random values
-# Add hidden and visible (?) biases initialized to 0
-# m=0.  s=0.1
+# Weight matrix 28x28 with small normally distributed random values (m=0.  s=0.1)
+# biases of all layers initialized to 0
 
 # Use as an activation function the sigmoid or ReLU for hidden layers
 # Output layer should always use sigmoid (output range is [0, 1])
 
-# HOW MANY HIDDEN LAYERS?
+# Use one hidden layer in 3.1
+# I started with 32 hidden nodes
 
 # Output layer dims = Input Layer dims for 3.1
 # Output layer dims = num of classes for 3.2
 
 # Train using gradient descent loss
+# Clara: all of the above is done and can be found in autoencoder.py
 
 """
-Experiments for 3.1: Building an Autoencoder
+Experiments for 3.1: Shallow Autoencoder
 """
 
 """1"""
-# Maybe experiment with learning rate. Start with a high learning rate (0.1) and decrease
-# (lr_decay=0.01) per epoch
+# Experiment with learning rate
+# 1) Experiment with different learning rates and plot
+# 2) Add learning rate decay oer epochs (parameter in optimizer)
+
+"""0"""
+# study ReLU activations in encoder layer
+# Remember: Output layer should always use sigmoid (output range is [0, 1])
+# comment on how they compare with the sigmoidal units, especially
+# in terms of the convergence rate (particularly interesting for the overcomplete
+# autoencoders).
 
 """2"""
 # Test different number of hidden units
-# h_u < input dims
+# h_u < input dims (undercomplete)
 # h_u = input dims
-# h_u > input dims
-
-# for the last case use a regularizer (L1 or L2) during training
+# h_u > input dims (overcomplete)
+# for the overcomplete case use a regularizer (L1 or L2) during training
 
 """3"""
 # Test how ReLU and sigmoid compare in the hidden layers in terms of convergence rate
@@ -77,7 +85,7 @@ Experiments for 3.1: Building an Autoencoder
 
 
 """
-Experiments for 3.2: Classification using a pretrained autoencoder
+Experiments for 3.2: Classification using a deep pre-trained autoencoder
 
 The point of this part is to use a Deep Neural Network with the hidden layers pretrained as an Autoencoder
 Then use this representation to the final output layer for classification
