@@ -26,27 +26,15 @@ def main():
             "momentum": 0.1,
         }
 
-    # noise to training
-    x_train_noise = np.copy(x_train).astype(float)
-    level = 0.2
-    cols = x_train.shape[1]
-    for row in range(x_train.shape[0]):
-        noise = np.random.normal(0, np.sqrt(level), cols)
-        x_train_noise[row,:] = x_train_noise[row,:] + noise
-
-    # noise to test
-    x_test_noise = np.copy(x_test).astype(float)
-    cols = x_test.shape[1]
-    for row in range(x_test.shape[0]):
-        noise = np.random.normal(0, np.sqrt(level), cols)
-        x_test_noise[row, :] = x_test_noise[row, :] + noise
-
-
     auto_enc1 = Autoencoder(**params)
-    history = auto_enc1.train(x_train_noise, x_train, x_test)
+    history = auto_enc1.train(x_train, x_train, x_test)
     plot.plot_loss(history, loss_type='MSE')
-    x_reconstr = auto_enc1.test(x_test_noise, binary=True)
-    plot_traintest(x_test_noise, y_test, x_reconstr)
+    plot_weights(auto_enc1)
+
+def plot_weights(auto_encoder):
+    weights = auto_encoder.get_weights()
+    print("hola")
+
 
 def plot_traintest(x_test, y_test, x_reconstr):
     true_ims_plot, reconstr_ims_plot = np.zeros([10, x_test.shape[1]]), np.zeros([10, x_reconstr.shape[1]])
