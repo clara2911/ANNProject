@@ -7,121 +7,131 @@ Authors: Kostis SZ, Romina Ariazza and Clara Tump
 
 import numpy as np
 
-import keras
-from keras.layers import Input, Dense, Dropout, Activation, Flatten, Convolution2D, MaxPooling2D
-from keras import optimizers
 from keras.models import Model, Sequential
-from keras.utils import np_utils
-from keras.initializers import RandomNormal
+from keras.layers import Input, Dense, Dropout, Activation, Flatten, Convolution2D, MaxPooling2D, BatchNormalization
+from keras.optimizers import SGD
+from keras.callbacks import EarlyStopping
 
 
 class DNN:
 
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs):
         """
         Initialize algorithm with data and parameters
         """
         var_defaults = {
             "batch_size": 256,
-            "act_function": 'sigmoid',
+            "h_act_function": 'sigmoid',
             "lr": 0.1,
             "decay": 0,
             "momentum": 0,
-            "nesterov": False,
             "loss": 'mean_squared_error'
         }
         for var, default in var_defaults.items():
             setattr(self, var, kwargs.get(var, default))
 
-        self.dnn = Sequential()
-
-    def _setup_model(self, x_train, output_nodes):
-        """
-        Setup model parameters
-        """
-        input_dim = x_train.shape[1]
-
-        # TODO: how many nodes?
-        X = 32
-        # add just one layer
-        self.dnn.add(Dense(X, input_dim=input_dim, activation=self.act_function))
-        # and then output layer
-        self.dnn.add(Dense(output_nodes, activation='sigmoid'))
-
-        sgd = optimizers.SGD(lr=self.lr, decay=self.decay, momentum=self.momentum, nesterov=self.nesterov)
-
-        self.dnn.compile(loss=self.loss, optimizer=sgd)
+        self.model = None
 
     def pre_train(self, layers, x_train, pre_epochs):
         """
-        Pretrain layer by layer the DNN
+        Pre-train layer by layer the DNN
         :param layers: dictionary with layer and its number of hidden nodes
         :param x_train: training data
         :param pre_epochs: how many epochs to train each layer
         """
+        # For the first layer the representation of the data is the same
+        data_represent_i = x_train
 
-        output_nodes = layers[-1]
-        # Initialize to a one layer NN
-        self._setup_model(x_train, output_nodes)
+        # A dictionary to save the weights of the encoders
+        pre_trained_weights = {}
 
-        # greedy one by one layer pre-training
-        for layer_i, nodes_i in layers.items():
-            self.add_layer(nodes_i, x_train, pre_epochs)
-            # here you can evaluate its performance when adding a new layer
+        for i, layer in enumerate(layers):
+            input_dim_of_layer = layer[0]
+            nodes_of_layer = layer[1]
+            output_dim_of_layer = input_dim_of_layer
 
-    def add_layer(self, num_of_nodes, x_train, epochs):
+            # Define the input of an encoder which is always an image
+            encoder_input = Input(shape=(input_dim_of_layer,))
+
+            # Define a layer to transform the data in another representation
+            encoder = Dense(nodes_of_layer, activation=self.h_act_function)(encoder_input)
+
+            # For the autoencoder define an output layer to reconstruct the image
+            decoder = Dense(output_dim_of_layer, activation=self.h_act_function)(encoder)
+
+            # Define a simple autoencoder that receives a normal image and reconstructs it
+            autoencoder = Model(inputs=encoder_input, outputs=decoder)
+
+            # Define an encoder that receives a normal image and outputs a representation of it in a different form
+            encoder = Model(inputs=encoder_input, outputs=encoder)
+
+            # Define an optimizer
+            sigmoid = SGD(lr=self.lr, decay=self.decay, momentum=self.momentum)
+
+            autoencoder.compile(optimizer=sigmoid, loss='binary_crossentropy')
+
+            encoder.compile(optimizer=sigmoid, loss="binary_crossentropy")
+
+            # Train the autoencoder and the encoder (they use the same layer reference)
+            autoencoder.fit(data_represent_i, data_represent_i,
+                            epochs=pre_epochs,
+                            batch_size=self.batch_size,
+                            validation_split=0.1,
+                            verbose=1,
+                            callbacks=[EarlyStopping(monitor='val_loss',
+                                                     min_delta=0, patience=0,
+                                                     verbose=0, mode='auto')])
+
+            # Get the output of the encoder to use it as input to the next autoencoder
+            data_represent_i = encoder.predict(data_represent_i)
+
+            pre_trained_weights[i] = encoder.get_weights()
+
+        return pre_trained_weights
+
+    def train(self, init_weights, x_train, y_train, epochs):
         """
-        Add another layer to the model and train it
-        :return:
-        """
-        # save output layer
-        output_layer = self.dnn.layers[-1]
-
-        # remove output layer
-        self.dnn.pop()
-
-        # mark all other layers as non trainable, meaning dont update them while training
-        for layer in self.dnn.layers:
-            layer.trainable = False
-
-        # TODO: what kernel initializer should we use?
-        # - he_uniform
-        # random normal
-
-        # add a new hidden layer to train
-        self.dnn.add(Dense(num_of_nodes, activation=self.act_function,
-                           kernel_initializer=RandomNormal(mean=0.0, stddev=0.2)))
-
-        # add the output layer back again
-        self.dnn.add(output_layer)
-
-        # pre-train the model
-        self.dnn.fit(x_train, x_train, epochs=epochs, verbose=0)
-
-    def train(self, x_train, x_val):
-        """
+        :param init_weights: Initial values for the weights of the model
         :param x_train: Training data
-        :param x_val: Validation data
-        :return:
+        :param y_train: Training targets
+        :param epochs: Number of epochs to train
+        :return: train history
         """
+        # Initialize a new model
+        self.model = Sequential()
 
+        # Initialize the weights of the layers to the given pre-trained weights
+        for i in range(len(init_weights)):
+            input_dim = init_weights[i][0].shape[0]
+            nodes_of_layer = init_weights[i][0].shape[1]
 
-        history = self.dnn.fit(x_train, x_train,
-                                       epochs=self.epochs,
-                                       batch_size=self.batch_size,
-                                       shuffle=False,
-                                       verbose=self.verbose,
-                                       validation_data=(x_val, x_val))
+            print("Setting layer " + str(i) + " with " + str(nodes_of_layer) + " nodes" + " and input " + str(input_dim))
+
+            self.model.add(Dense(nodes_of_layer, activation=self.h_act_function, input_dim=input_dim))
+
+            self.model.layers[i].set_weights(init_weights[i])
+
+        sigmoid = SGD(lr=self.lr, decay=self.decay, momentum=self.momentum)
+
+        self.model.compile(optimizer=sigmoid, loss='MSE')
+
+        # Train the DNN
+        history = self.model.fit(x_train, y_train,
+                                 epochs=epochs,
+                                 batch_size=self.batch_size,
+                                 validation_split=0.1,
+                                 shuffle=False,
+                                 verbose=1)
         return history
 
-    def test(self, x_test, binary=True, batch_size=32, verbose=1):
+    def test(self, x_test, binary=True, verbose=1):
         """
         :param x_test: Testing data
         :param binary: return output in a binary format
         :param batch_size: self-explanatory
         :param verbose: Show testing info
         """
-        x_reconstr = self.autoencoder.predict(x_test, batch_size=batch_size, verbose=verbose)
+        predicted = self.model.predict(x_test, batch_size=self.batch_size, verbose=verbose)
         if binary:
-            x_reconstr = np.where(x_reconstr < 0.5, 0, 1)
-        return x_reconstr
+            predicted = np.where(predicted < 0.5, 0, 1)
+        return predicted
