@@ -34,6 +34,8 @@ def main():
     pre_epochs = 1
     train_epochs = 50
 
+    # TODO: Convert targets to one hot encoding
+
     # Create auto-encoders and train them one by one by stacking them in the DNN
     pre_trained_weights = dnn.pre_train(layers, x_train, pre_epochs)
 
