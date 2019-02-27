@@ -26,7 +26,7 @@ def main():
             "momentum": 0.1,
         }
     auto_enc1 = Autoencoder(**params)
-    history = auto_enc1.train(x_train,x_train, x_test)
+    history = auto_enc1.train(x_train, x_test)
     plot.plot_loss(history, loss_type='MSE')
     x_reconstr = auto_enc1.test(x_test, binary=True)
     plot_traintest(x_test, y_test, x_reconstr)

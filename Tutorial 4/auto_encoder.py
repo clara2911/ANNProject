@@ -45,7 +45,7 @@ class Autoencoder:
             setattr(self, var, kwargs.get(var, default))
         self.autoencoder = Sequential()
 
-    def train(self, x_train, x_test):
+    def train(self, x_train, y_train, x_test):
         dim = x_train.shape[1]
         rand_norm = RandomNormal(mean=self.weight_init[0], stddev=self.weight_init[1], seed=self.seed)
         self.autoencoder.add(Dense(self.num_hid_nodes,
@@ -57,7 +57,8 @@ class Autoencoder:
         self.autoencoder.add(Dense(dim, activation='sigmoid'))
         sgd = optimizers.SGD(lr=self.lr, decay=self.decay, momentum=self.momentum, nesterov=self.nesterov)
         self.autoencoder.compile(loss=self.loss, optimizer=sgd)
-        history = self.autoencoder.fit(x_train, x_train,
+
+        history = self.autoencoder.fit(x_train, y_train,
                         epochs=self.epochs,
                         batch_size=self.batch_size,
                         shuffle=False,
