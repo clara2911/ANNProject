@@ -61,6 +61,7 @@ class Autoencoder:
         history = self.autoencoder.fit(x_train, y_train,
                         epochs=self.epochs,
                         batch_size=self.batch_size,
+                        validation_split=0.1,
                         shuffle=False,
                         verbose=self.verbose,
                         validation_data=(x_test, x_test))
