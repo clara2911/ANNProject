@@ -6,9 +6,8 @@ Authors: Kostis SZ, Romina Ariazza and Clara Tump
 """
 
 import numpy as np
-
 from keras.models import Model, Sequential
-from keras.layers import Input, Dense, Dropout, Activation, Flatten, Convolution2D, MaxPooling2D, BatchNormalization
+from keras.layers import Input, Dense
 from keras.optimizers import SGD
 from keras.callbacks import EarlyStopping
 
@@ -46,8 +45,13 @@ class DNN:
         pre_trained_weights = {}
 
         for i, layer in enumerate(layers):
+            # Input dimensions of next layer
             input_dim_of_layer = layer[0]
+
+            # Number of nodes of the layer
             nodes_of_layer = layer[1]
+
+            # Output dimensions of layer
             output_dim_of_layer = input_dim_of_layer
 
             # Define the input of an encoder which is always an image
@@ -89,7 +93,7 @@ class DNN:
 
         return pre_trained_weights
 
-    def train(self, init_weights, x_train, y_train, epochs):
+    def train(self, x_train, y_train, epochs, init_weights=None):
         """
         :param init_weights: Initial values for the weights of the model
         :param x_train: Training data
@@ -100,38 +104,55 @@ class DNN:
         # Initialize a new model
         self.model = Sequential()
 
-        # Initialize the weights of the layers to the given pre-trained weights
-        for i in range(len(init_weights)):
-            input_dim = init_weights[i][0].shape[0]
-            nodes_of_layer = init_weights[i][0].shape[1]
+        if init_weights is not None:
+            # Initialize the weights of the layers to the given pre-trained weights
+            for i in range(len(init_weights)):
+                input_dim = init_weights[i][0].shape[0]
+                nodes_of_layer = init_weights[i][0].shape[1]
 
-            print("Setting layer " + str(i) + " with " + str(nodes_of_layer) + " nodes" + " and input " + str(input_dim))
+                print("Setting layer " + str(i) + " with " + str(nodes_of_layer) +
+                      " nodes" + " and input " + str(input_dim))
 
-            self.model.add(Dense(nodes_of_layer, activation=self.h_act_function, input_dim=input_dim))
+                self.model.add(Dense(nodes_of_layer, activation=self.h_act_function, input_dim=input_dim))
 
-            self.model.layers[i].set_weights(init_weights[i])
+                self.model.layers[i].set_weights(init_weights[i])
+        else:
+            self.model.add(Dense(512, activation=self.h_act_function, input_dim=x_train.shape[1]))
+
+            self.model.add(Dense(256, activation=self.h_act_function))
+
+            self.model.add(Dense(10, activation=self.h_act_function))
 
         sigmoid = SGD(lr=self.lr, decay=self.decay, momentum=self.momentum)
 
-        self.model.compile(optimizer=sigmoid, loss='MSE')
+        self.model.compile(optimizer=sigmoid, loss='MSE', metrics=['acc'])
+
+        print(self.model.summary())
 
         # Train the DNN
         history = self.model.fit(x_train, y_train,
                                  epochs=epochs,
                                  batch_size=self.batch_size,
                                  validation_split=0.1,
-                                 shuffle=False,
-                                 verbose=1)
+                                 shuffle=True,
+                                 verbose=1,
+                                 callbacks=[EarlyStopping(monitor='val_loss',
+                                                          min_delta=0, patience=0,
+                                                          verbose=0, mode='auto')])
         return history
 
-    def test(self, x_test, binary=True, verbose=1):
+    def test(self, x_test, y_test, binary=True, verbose=1):
         """
         :param x_test: Testing data
+        :param y_test: Testing labels
         :param binary: return output in a binary format
-        :param batch_size: self-explanatory
         :param verbose: Show testing info
         """
         predicted = self.model.predict(x_test, batch_size=self.batch_size, verbose=verbose)
+
+        score = self.model.evaluate(x_test, y_test, batch_size=self.batch_size, verbose=2)
+
         if binary:
             predicted = np.where(predicted < 0.5, 0, 1)
-        return predicted
+
+        return predicted, score
