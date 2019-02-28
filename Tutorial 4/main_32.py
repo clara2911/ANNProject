@@ -2,7 +2,7 @@
 """
 Main file for Tutorial 4 Part 3.2
 
-Authors: Kostis SZ, Romina Ariazza and Clara Tump
+Authors: Kostis SZ, Romina Arriaza and Clara Tump
 """
 
 import datetime
@@ -15,7 +15,6 @@ import os
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
 
-
 now = datetime.datetime.now()
 MODEL_FOLDER = os.getcwd() + "/m_" + str(now.day) + "." + str(now.month) + "_" + str(now.hour) + ":" + str(now.minute)
 os.makedirs(MODEL_FOLDER)
@@ -27,28 +26,34 @@ params = {
     "h_act_function": "sigmoid"
 }
 
+limit_memory = False
 memory_use = 0.25
-
-
-def config_mem():
-    """
-    Tensorflow by default allocates all memory available. Limit its memory use by percentage
-    """
-    config = tf.ConfigProto()
-    config.gpu_options.per_process_gpu_memory_fraction = memory_use
-    set_session(tf.Session(config=config))
-    print("USING " + str(memory_use) + "% OF MEMORY")
 
 
 def main():
     x_train, y_train, x_test, y_test = data.mnist(one_hot=True)
 
-    # Define Deep Neural Network structure
+    # Define Deep Neural Network structure (input_dim, num_of_nodes)
     layers = [
         [x_train.shape[1], 256],
         [256, 128],
         [128, 64]
     ]
+
+    # Experiment 1
+    layers = [
+        [x_train.shape[1], 128],
+        [128, 64],
+        [64, 128]
+    ]
+    # Experiment 2
+    layers = [
+        [x_train.shape[1], 128],
+        [128, 256],
+        [256, 128]
+    ]
+    # Experiment 3: No-hidden-layer option (no pre-training needed here)
+    layers = []
 
     # Initialize a deep neural network
     dnn = DNN(MODEL_FOLDER, layers, params)
@@ -85,6 +90,17 @@ def save_results(accuracy):
         f.write("Test accuracy: " + str(accuracy))
 
 
+def config_mem():
+    """
+    Tensorflow by default allocates all memory available. Limit its memory use by percentage
+    """
+    config = tf.ConfigProto()
+    config.gpu_options.per_process_gpu_memory_fraction = memory_use
+    set_session(tf.Session(config=config))
+    print("USING " + str(memory_use) + "% OF MEMORY")
+
+
 if __name__ == "__main__":
-    config_mem()
+    if limit_memory:
+        config_mem()
     main()
