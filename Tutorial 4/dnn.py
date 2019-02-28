@@ -14,7 +14,7 @@ from keras.callbacks import EarlyStopping
 
 class DNN:
 
-    def __init__(self, kwargs):
+    def __init__(self, model_dir, layers_structure, kwargs):
         """
         Initialize algorithm with data and parameters
         """
@@ -31,8 +31,10 @@ class DNN:
             setattr(self, var, kwargs.get(var, default))
 
         self.model = None
+        self.dir = model_dir
+        self.layers = layers_structure
 
-    def pre_train(self, layers, x_train, pre_epochs):
+    def pre_train(self, x_train, pre_epochs):
         """
         Pre-train layer by layer the DNN
         :param layers: dictionary with layer and its number of hidden nodes
@@ -45,7 +47,7 @@ class DNN:
         # A dictionary to save the weights of the encoders
         pre_trained_weights = {}
 
-        for i, layer in enumerate(layers):
+        for i, layer in enumerate(self.layers):
             # Input dimensions of next layer
             input_dim_of_layer = layer[0]
 
@@ -90,6 +92,7 @@ class DNN:
             # Get the output of the encoder to use it as input to the next autoencoder
             data_represent_i = encoder.predict(data_represent_i)
 
+            encoder.save_weights(self.dir + "/w_encoder_" + str((i+1)) + ".h5")
             pre_trained_weights[i] = encoder.get_weights()
 
         return pre_trained_weights
@@ -107,9 +110,9 @@ class DNN:
 
         if init_weights is not None:
             # Initialize the weights of the layers to the given pre-trained weights
-            for i in range(len(init_weights)):
-                input_dim = init_weights[i][0].shape[0]
-                nodes_of_layer = init_weights[i][0].shape[1]
+            for i, layer in enumerate(self.layers):
+                input_dim = layer[0]
+                nodes_of_layer = layer[1]
 
                 print("Setting layer " + str(i) + " with " + str(nodes_of_layer) +
                       " nodes" + " and input " + str(input_dim))
