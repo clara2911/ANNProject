@@ -41,3 +41,24 @@ def plot_images(true_ims, reconstr_ims):
     plt.tight_layout()
     plt.suptitle("Reconstructed images")
     plt.show()
+
+def plot_parameter(param_name, lr_list, error_list, std_list):
+    plt.errorbar(lr_list, error_list, yerr=std_list, color='blue', ecolor='red')
+    plt.title(param_name)
+    plt.xlabel(param_name)
+    plt.ylabel('MSE')
+    plt.show()
+
+def plot_losses(layer_sizes, sigmoid_histories, relu_histories):
+    end_range = len(sigmoid_histories[0]) + 1
+    epochs = list(range(1, end_range ))
+    for i in range(len(sigmoid_histories)):
+        print("epochs: ", epochs)
+        print("sigmoid_histories[i]: ", sigmoid_histories[i])
+        plt.errorbar(epochs, sigmoid_histories[i], label='sigmoid // '+str(layer_sizes[i]) + ' nodes')
+        plt.errorbar(epochs, relu_histories[i], label='relu // '+str(layer_sizes[i]) + ' nodes')
+    plt.xlabel('Epochs')
+    plt.ylabel('MSE')
+    plt.title('RELU vs Sigmoid')
+    plt.legend()
+    plt.show()
