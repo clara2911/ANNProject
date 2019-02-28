@@ -2,7 +2,7 @@
 """
 A Deep Neural Network
 
-Authors: Kostis SZ, Romina Ariazza and Clara Tump
+Authors: Kostis SZ, Romina Arriaza and Clara Tump
 """
 
 import numpy as np
@@ -14,12 +14,12 @@ from keras.callbacks import EarlyStopping
 
 class DNN:
 
-    def __init__(self, model_dir, layers_structure, kwargs):
+    def __init__(self, model_dir, os_slash, layers_structure, kwargs):
         """
         Initialize algorithm with data and parameters
         """
         var_defaults = {
-            "batch_size": 256,
+            "batch_size": 32,
             "h_act_function": 'sigmoid',
             "out_act_function": 'sigmoid',
             "lr": 0.1,
@@ -31,13 +31,13 @@ class DNN:
             setattr(self, var, kwargs.get(var, default))
 
         self.model = None
+        self.os_s = os_slash
         self.dir = model_dir
         self.layers = layers_structure
 
     def pre_train(self, x_train, pre_epochs):
         """
         Pre-train layer by layer the DNN
-        :param layers: dictionary with layer and its number of hidden nodes
         :param x_train: training data
         :param pre_epochs: how many epochs to train each layer
         """
@@ -73,11 +73,11 @@ class DNN:
             encoder = Model(inputs=encoder_input, outputs=encoder)
 
             # Define an optimizer
-            sigmoid = SGD(lr=self.lr, decay=self.decay, momentum=self.momentum)
+            grad_descent = SGD(lr=self.lr, decay=self.decay, momentum=self.momentum)
 
-            autoencoder.compile(optimizer=sigmoid, loss='binary_crossentropy')
+            autoencoder.compile(optimizer=grad_descent, loss='mse')
 
-            encoder.compile(optimizer=sigmoid, loss="binary_crossentropy")
+            encoder.compile(optimizer=grad_descent, loss='mse')
 
             # Train the autoencoder and the encoder (they use the same layer reference)
             autoencoder.fit(data_represent_i, data_represent_i,
@@ -85,14 +85,13 @@ class DNN:
                             batch_size=self.batch_size,
                             validation_split=0.1,
                             verbose=1,
-                            callbacks=[EarlyStopping(monitor='val_loss',
-                                                     min_delta=0, patience=0,
+                            callbacks=[EarlyStopping(monitor='val_loss', patience=10,
                                                      verbose=0, mode='auto')])
 
             # Get the output of the encoder to use it as input to the next autoencoder
             data_represent_i = encoder.predict(data_represent_i)
 
-            encoder.save_weights(self.dir + "/w_encoder_" + str((i+1)) + ".h5")
+            encoder.save_weights(self.dir + self.os_s + "w_encoder_" + str((i+1)) + ".h5")
             pre_trained_weights[i] = encoder.get_weights()
 
         return pre_trained_weights
@@ -108,31 +107,23 @@ class DNN:
         # Initialize a new model
         self.model = Sequential()
 
-        if init_weights is not None:
-            # Initialize the weights of the layers to the given pre-trained weights
-            for i, layer in enumerate(self.layers):
-                input_dim = layer[0]
-                nodes_of_layer = layer[1]
+        for i, layer in enumerate(self.layers):
+            input_dim = layer[0]
+            nodes_of_layer = layer[1]
 
-                print("Setting layer " + str(i) + " with " + str(nodes_of_layer) +
-                      " nodes" + " and input " + str(input_dim))
+            self.model.add(Dense(nodes_of_layer, activation=self.h_act_function, input_dim=input_dim))
 
-                self.model.add(Dense(nodes_of_layer, activation=self.h_act_function, input_dim=input_dim))
-
+            if init_weights is not None:
+                print("LOADING PRE-TRAINED WEIGHTS")
+                # Initialize the weights of the layers to the given pre-trained weights
                 self.model.layers[i].set_weights(init_weights[i])
-        else:
-            self.model.add(Dense(512, activation=self.h_act_function, input_dim=x_train.shape[1]))
-
-            self.model.add(Dense(256, activation=self.h_act_function))
-
-            self.model.add(Dense(128, activation=self.h_act_function))
 
         # Add an output layer at the end for classification
         self.model.add(Dense(10, activation=self.out_act_function))
 
-        sigmoid = SGD(lr=self.lr, decay=self.decay, momentum=self.momentum)
+        grad_descent = SGD(lr=self.lr, decay=self.decay, momentum=self.momentum)
 
-        self.model.compile(optimizer=sigmoid, loss='MSE', metrics=['acc'])
+        self.model.compile(optimizer=grad_descent, loss='mse', metrics=['acc'])
 
         print(self.model.summary())
 
@@ -142,10 +133,7 @@ class DNN:
                                  batch_size=self.batch_size,
                                  validation_split=0.1,
                                  shuffle=True,
-                                 verbose=1,
-                                 callbacks=[EarlyStopping(monitor='val_loss',
-                                                          min_delta=0, patience=0,
-                                                          verbose=0, mode='auto')])
+                                 verbose=1)
         return history
 
     def test(self, x_test, y_test, binary=True, verbose=1):

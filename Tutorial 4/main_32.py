@@ -15,19 +15,23 @@ import os
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
 
+
+os_slash = '/'  # Unix: '/' Windows: '\'
+
 now = datetime.datetime.now()
-MODEL_FOLDER = os.getcwd() + "/m_" + str(now.day) + "." + str(now.month) + "_" + str(now.hour) + ":" + str(now.minute)
+MODEL_FOLDER = os.getcwd() + os_slash + "m_" + str(now.day) + "." + str(now.month) + "_" + str(now.hour) + ":" + str(now.minute)
 os.makedirs(MODEL_FOLDER)
 
 params = {
-    "lr": 0.1,
-    "decay": 1e-6,
-    "momentum": 0.1,
-    "h_act_function": "sigmoid"
+    "lr": 0.15,
+    "decay": 0, #1e-4,
+    "momentum": 0, # 0.7,
+    "h_act_function": 'relu',
+    "out_act_function": 'sigmoid'
 }
 
-limit_memory = False
-memory_use = 0.25
+limit_memory = True
+memory_use = 0.35
 
 
 def main():
@@ -40,42 +44,27 @@ def main():
         [128, 64]
     ]
 
-    # Experiment 1
-    layers = [
-        [x_train.shape[1], 128],
-        [128, 64],
-        [64, 128]
-    ]
-    # Experiment 2
-    layers = [
-        [x_train.shape[1], 128],
-        [128, 256],
-        [256, 128]
-    ]
-    # Experiment 3: No-hidden-layer option (no pre-training needed here)
-    layers = []
-
     # Initialize a deep neural network
-    dnn = DNN(MODEL_FOLDER, layers, params)
 
-    pre_epochs = 1
-    train_epochs = 1
+    dnn = DNN(MODEL_FOLDER, os_slash, layers, params)
+
+    pre_epochs = 100
+    train_epochs = 100
 
     # Create auto-encoders and train them one by one by stacking them in the DNN
     pre_trained_weights = dnn.pre_train(x_train, pre_epochs)
 
     # Then use the pre-trained weights of these layers as initial weight values for the MLP
     history = dnn.train(x_train, y_train, train_epochs, init_weights=pre_trained_weights)
-    # history = dnn.train(x_train, y_train, train_epochs)
 
-    # plot.plot_loss(history, loss_type='MSE')
+    plot.plot_loss(history, loss_type='MSE')
 
     predicted, score = dnn.test(x_test, y_test)
 
     print("Test accuracy: ", score[1])
 
-    dnn.model.save_weights(MODEL_FOLDER + "/final_weights.h5")
-    dnn.model.save(MODEL_FOLDER + "/model.h5")
+    dnn.model.save_weights(MODEL_FOLDER + os_slash + "final_weights.h5")
+    dnn.model.save(MODEL_FOLDER + os_slash + "model.h5")
     save_results(score[1])
 
 
@@ -83,10 +72,10 @@ def save_results(accuracy):
     """
     Save to a unique folder the parameters and results of the model
     """
-    with open(MODEL_FOLDER + '/model_params.json', 'w') as f:
+    with open(MODEL_FOLDER + os_slash + 'model_params.json', 'w') as f:
         json.dump(params, f)
 
-    with open(MODEL_FOLDER + '/results.out', 'w') as f:
+    with open(MODEL_FOLDER + os_slash + 'results.out', 'w') as f:
         f.write("Test accuracy: " + str(accuracy))
 
 
