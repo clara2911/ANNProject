@@ -21,6 +21,7 @@ class DNN:
         var_defaults = {
             "batch_size": 256,
             "h_act_function": 'sigmoid',
+            "out_act_function": 'sigmoid',
             "lr": 0.1,
             "decay": 0,
             "momentum": 0,
@@ -121,7 +122,10 @@ class DNN:
 
             self.model.add(Dense(256, activation=self.h_act_function))
 
-            self.model.add(Dense(10, activation=self.h_act_function))
+            self.model.add(Dense(128, activation=self.h_act_function))
+
+        # Add an output layer at the end for classification
+        self.model.add(Dense(10, activation=self.out_act_function))
 
         sigmoid = SGD(lr=self.lr, decay=self.decay, momentum=self.momentum)
 

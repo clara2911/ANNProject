@@ -19,7 +19,7 @@ def main():
         "lr": 0.15,
         "decay": 1e-6,
         "momentum": 0.1,
-        "h_act_function": "sigmoid"     # TODO: WATCHOUT
+        "h_act_function": "sigmoid"
     }
 
     x_train, y_train, x_test, y_test = data.mnist(one_hot=True)
@@ -28,7 +28,8 @@ def main():
     layers = [
         [x_train.shape[1], 512],
         [512, 256],
-        [256, num_of_classes]]
+        [256, 128]
+    ]
 
     # Initialize a deep neural network
     dnn = DNN(params)
@@ -41,12 +42,19 @@ def main():
 
     # Then use the pre-trained weights of these layers as initial weight values for the MLP
     history = dnn.train(x_train, y_train, train_epochs, init_weights=pre_trained_weights)
+    # history = dnn.train(x_train, y_train, train_epochs)
 
     plot.plot_loss(history, loss_type='MSE')
 
     predicted, score = dnn.test(x_test, y_test)
 
     print("Test accuracy: ", score[1])
+
+
+#def compare():
+
+
+# def save_results():
 
 
 if __name__ == "__main__":
