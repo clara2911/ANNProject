@@ -41,3 +41,10 @@ def plot_images(true_ims, reconstr_ims):
     plt.tight_layout()
     plt.suptitle("Reconstructed images")
     plt.show()
+
+def plot_parameter(param_name, lr_list, error_list, std_list):
+    plt.errorbar(lr_list, error_list, yerr=std_list, color='blue', ecolor='red')
+    plt.title(param_name)
+    plt.xlabel(param_name)
+    plt.ylabel('MSE')
+    plt.show()
