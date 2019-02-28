@@ -18,6 +18,7 @@ from keras import optimizers
 from keras.models import Model, Sequential
 from keras.utils import np_utils
 from keras.initializers import RandomNormal
+from keras import regularizers
 import data
 
 class Autoencoder:
@@ -45,13 +46,14 @@ class Autoencoder:
             setattr(self, var, kwargs.get(var, default))
         self.autoencoder = Sequential()
 
-    def train(self, x_train, y_train, x_test):
+    def train(self, x_train, y_train, x_test, regularization=0):
         dim = x_train.shape[1]
         rand_norm = RandomNormal(mean=self.weight_init[0], stddev=self.weight_init[1], seed=self.seed)
         self.autoencoder.add(Dense(self.num_hid_nodes,
                                 activation=self.activations,
                                 kernel_initializer=rand_norm,
-                                bias_initializer=self.bias_init, input_dim=dim))
+                                bias_initializer=self.bias_init, input_dim=dim,
+                                kernel_regularizer=regularizers.l2(regularization)))
 
         #last layer should always be sigmoid so that out is in [0,1]
         self.autoencoder.add(Dense(dim, activation='sigmoid'))
@@ -67,8 +69,14 @@ class Autoencoder:
                         validation_data=(x_test, x_test))
         return history
 
+
+
     def test(self, x_test, binary=True, batch_size=32, verbose=1):
         x_reconstr = self.autoencoder.predict(x_test, batch_size=batch_size, verbose=verbose)
         if binary:
             x_reconstr = np.where(x_reconstr < 0.5, 0, 1)
         return x_reconstr
+
+    def evaluate(self, x_test):
+        loss = self.autoencoder.evaluate(x_test, x_test)
+        return loss

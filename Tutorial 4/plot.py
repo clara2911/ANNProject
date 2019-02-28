@@ -48,3 +48,17 @@ def plot_parameter(param_name, lr_list, error_list, std_list):
     plt.xlabel(param_name)
     plt.ylabel('MSE')
     plt.show()
+
+def plot_losses(layer_sizes, sigmoid_histories, relu_histories):
+    end_range = len(sigmoid_histories[0]) + 1
+    epochs = list(range(1, end_range ))
+    for i in range(len(sigmoid_histories)):
+        print("epochs: ", epochs)
+        print("sigmoid_histories[i]: ", sigmoid_histories[i])
+        plt.errorbar(epochs, sigmoid_histories[i], label='sigmoid // '+str(layer_sizes[i]) + ' nodes')
+        plt.errorbar(epochs, relu_histories[i], label='relu // '+str(layer_sizes[i]) + ' nodes')
+    plt.xlabel('Epochs')
+    plt.ylabel('MSE')
+    plt.title('RELU vs Sigmoid')
+    plt.legend()
+    plt.show()
