@@ -11,9 +11,8 @@ Authors: Kostis SZ, Romina Ariazza and Clara Tump
 
 import numpy as np
 from matplotlib import pyplot as plt
-
 import keras
-from keras.layers import Input, Dense, Dropout, Activation, Flatten, Convolution2D, MaxPooling2D
+from keras.layers import Input, Dense, Dropout, Activation, Flatten, Convolution2D, MaxPooling2D, GaussianNoise
 from keras import optimizers
 from keras.models import Model, Sequential
 from keras.utils import np_utils
