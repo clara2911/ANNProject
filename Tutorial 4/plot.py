@@ -62,3 +62,39 @@ def plot_losses(layer_sizes, sigmoid_histories, relu_histories):
     plt.title('RELU vs Sigmoid')
     plt.legend()
     plt.show()
+    
+def plot_weights_image(auto_encoder, nodes, num_w):
+    weights = auto_encoder.get_weights()
+    for i, layer in enumerate(auto_encoder.autoencoder._layers):
+        if i != 0:
+            all_weights = layer.get_weights()
+            weights = np.zeros((nodes, num_w))
+            for j, w in enumerate(all_weights[0]):
+                for k, elem in enumerate(np.array(w)):
+                    weights[j,k] = elem
+            ind = np.random.randint(0, weights.shape[1], 25)
+
+            fig, ax = plt.subplots(5,5)
+            for k,j in enumerate(ind):
+                im_w = weights[:, j].reshape(28,28)
+                row = int(k/5)
+                col = int(k%5)
+                ax[row, col].imshow(im_w)
+            fig.suptitle('Weights {} layer'.format(i), fontsize = 14)
+            plt.show()
+    print("hola")
+
+def plot_weights_hist(auto_encoder):
+    for i, layer in enumerate(auto_encoder.autoencoder._layers):
+        if i != 0:
+            all_weights = layer.get_weights()
+            weights = []
+            for w in all_weights[0]:
+                weights = np.hstack((weights, w))
+
+            n, bins, patches = plt.hist(np.array(weights), 20, density=False, facecolor='g', alpha=0.75)
+            plt.xlabel('Bins', fontsize = 14)
+            plt.ylabel('Count', fontsize = 14)
+            plt.title('Histogram of weights {} layer'.format(i), fontsize = 14)
+            plt.grid(True)
+            plt.show()
