@@ -70,6 +70,29 @@ class Autoencoder:
         return history
 
 
+    def train_noisy(self, x_train, y_train, x_test, std_dev):
+        dim = x_train.shape[1]
+        rand_norm = RandomNormal(mean=self.weight_init[0], stddev=self.weight_init[1], seed=self.seed)
+
+        self.autoencoder.add(GaussianNoise(std_dev, input_shape=(dim,)))
+        self.autoencoder.add(Dense(self.num_hid_nodes,
+                                activation=self.activations,
+                                kernel_initializer=rand_norm,
+                                bias_initializer=self.bias_init, input_dim=dim))
+        #last layer should always be sigmoid so that out is in [0,1]
+        self.autoencoder.add(Dense(dim, activation='sigmoid'))
+        sgd = optimizers.SGD(lr=self.lr, decay=self.decay, momentum=self.momentum, nesterov=self.nesterov)
+        self.autoencoder.compile(loss=self.loss, optimizer=sgd)
+
+        history = self.autoencoder.fit(x_train, y_train,
+                        epochs=self.epochs,
+                        batch_size=self.batch_size,
+                        validation_split=0.1,
+                        shuffle=False,
+                        verbose=self.verbose)
+        return history
+
+
 
     def test(self, x_test, binary=True, batch_size=32, verbose=1):
         x_reconstr = self.autoencoder.predict(x_test, batch_size=batch_size, verbose=verbose)
